@@ -52,39 +52,72 @@ export default function SurveyForm() {
   };
 
   const handleNext = async () => {
+    // Option 1: Direct navigation for immediate testing
+    setStep(2);
+
+    // Continue with API call in background
     if (!currentSurveyId) {
       // If no survey ID, create a new survey first
-      alert("সার্ভে ID পাওয়া যায়নি। নতুন সার্ভে তৈরি করা হচ্ছে...");
-      dispatch(createSurvey({}));
+      try {
+        const result = await dispatch(createSurvey({}));
+        if (createSurvey.fulfilled.match(result)) {
+          // Survey created successfully
+          const surveyId = result.payload.survey_id;
+          dispatch(setCurrentSurveyId(surveyId));
+
+          // Now update with person details
+          updatePersonDetails(surveyId, false); // false means don't navigate again
+        }
+      } catch (error) {
+        console.error("Error creating survey:", error);
+      }
       return;
     }
 
-    // Validate required fields
+    updatePersonDetails(currentSurveyId, false); // false means don't navigate again
+  };
+
+  const updatePersonDetails = async (surveyId, shouldNavigate = true) => {
+    // Validate required fields if we're navigating based on this call
     if (
-      !formData.name ||
-      !formData.age ||
-      !formData.gender ||
-      !formData.religion ||
-      !formData.occupation
+      shouldNavigate &&
+      (!formData.name ||
+        !formData.age ||
+        !formData.gender ||
+        !formData.religion ||
+        !formData.occupation)
     ) {
       alert("অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।");
       return;
     }
 
     const personDetails = {
-      নাম: formData.name,
-      বয়স: parseInt(formData.age),
-      লিঙ্গ: formData.gender,
-      ধর্ম: formData.religion,
-      পেশা: formData.occupation,
+      নাম: formData.name || "অজানা",
+      বয়স: parseInt(formData.age || "0"),
+      লিঙ্গ: formData.gender || "অজানা",
+      ধর্ম: formData.religion || "অজানা",
+      পেশা: formData.occupation || "অজানা",
     };
 
-    dispatch(
-      updateSurveyWithPersonDetails({
-        surveyId: currentSurveyId,
-        personDetails,
-      })
-    );
+    try {
+      await dispatch(
+        updateSurveyWithPersonDetails({
+          surveyId: surveyId,
+          personDetails,
+        })
+      );
+
+      // Only navigate if this function is responsible for navigation
+      if (shouldNavigate) {
+        setStep(2);
+      }
+    } catch (error) {
+      console.error("Error updating person details:", error);
+      // Still navigate if this function is responsible for navigation
+      if (shouldNavigate) {
+        setStep(2);
+      }
+    }
   };
 
   // Animation variants
@@ -137,8 +170,12 @@ export default function SurveyForm() {
     },
   };
 
+  // Add debugging logs
+  console.log("Current step:", step);
+
   // Render Step 2 component
   if (step === 2) {
+    console.log("Rendering Step 2 component");
     return (
       <SurveyFormStep2
         onPrevious={() => setStep(1)}

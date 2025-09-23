@@ -62,6 +62,41 @@ export const updateSurveyWithPersonDetails = createAsyncThunk(
   }
 );
 
+// Async thunk for updating survey with location details
+export const updateSurveyWithLocationDetails = createAsyncThunk(
+  "surveyCreate/updateSurveyWithLocationDetails",
+  async ({ surveyId, locationDetails }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(
+        `https://npsbd.xyz/api/surveys/${surveyId}`,
+        {
+          method: "PATCH",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            location_details: locationDetails,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail || "Failed to update location details"
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const surveyCreateSlice = createSlice({
   name: "surveyCreate",
   initialState: {
@@ -121,6 +156,22 @@ const surveyCreateSlice = createSlice({
         state.error = null;
       })
       .addCase(updateSurveyWithPersonDetails.rejected, (state, action) => {
+        state.isUpdating = false;
+        state.error = action.payload;
+        state.updateSuccess = false;
+      })
+      .addCase(updateSurveyWithLocationDetails.pending, (state) => {
+        state.isUpdating = true;
+        state.error = null;
+        state.updateSuccess = false;
+      })
+      .addCase(updateSurveyWithLocationDetails.fulfilled, (state, action) => {
+        state.isUpdating = false;
+        state.updateSuccess = true;
+        state.createdSurvey = action.payload;
+        state.error = null;
+      })
+      .addCase(updateSurveyWithLocationDetails.rejected, (state, action) => {
         state.isUpdating = false;
         state.error = action.payload;
         state.updateSuccess = false;

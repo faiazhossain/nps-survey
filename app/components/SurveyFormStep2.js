@@ -2,11 +2,78 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { updateSurveyWithLocationDetails } from "../store/surveyCreateSlice";
 
 export default function SurveyFormStep2({ onPrevious, onNext }) {
-  const [step, setStep] = useState(2);
+  const [formData, setFormData] = useState({
+    division: "",
+    district: "",
+    thana: "",
+    constituency: "",
+    union: "",
+    ward: "",
+  });
+
+  const dispatch = useDispatch();
+  const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
+    (state) => state.surveyCreate
+  );
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handle successful update
+  useEffect(() => {
+    if (updateSuccess) {
+      onNext();
+    }
+  }, [updateSuccess, onNext]);
+
+  // Handle next button click
+  const handleNext = async () => {
+    if (!currentSurveyId) {
+      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      return;
+    }
+
+    // Validate required fields
+    if (
+      !formData.division ||
+      !formData.district ||
+      !formData.thana ||
+      !formData.constituency ||
+      !formData.union ||
+      !formData.ward
+    ) {
+      alert("অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।");
+      return;
+    }
+
+    const locationDetails = {
+      বিভাগ: formData.division,
+      জেলা: formData.district,
+      থানা: formData.thana,
+      আসন: formData.constituency,
+      ইউনিয়ন: formData.union,
+      ওয়ার্ড: formData.ward,
+    };
+
+    dispatch(
+      updateSurveyWithLocationDetails({
+        surveyId: currentSurveyId,
+        locationDetails,
+      })
+    );
+  };
 
   // Animation variants
   const containerVariants = {
@@ -125,70 +192,100 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
           </motion.div>
         </motion.div>
 
+        {/* Error Display */}
+        {error && (
+          <motion.div
+            className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            সার্ভে আপডেট করতে সমস্যা: {error}
+          </motion.div>
+        )}
+
         {/* Form Fields */}
-        <motion.form className='space-y-6' variants={itemVariants}>
+        <motion.form
+          onSubmit={(e) => e.preventDefault()}
+          className='space-y-6'
+          variants={itemVariants}
+        >
           <motion.div className='space-y-4' variants={containerVariants}>
             <motion.div variants={itemVariants}>
               <label htmlFor='division' className='block text-gray-700 mb-2'>
-                বিভাগ
+                বিভাগ *
               </label>
               <motion.select
                 id='division'
+                name='division'
+                value={formData.division}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 variants={selectVariants}
                 whileFocus='focus'
+                required
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='dhaka'>ঢাকা</option>
-                <option value='chittagong'>চট্টগ্রাম</option>
-                <option value='rajshahi'>রাজশাহী</option>
-                <option value='khulna'>খুলনা</option>
-                <option value='barisal'>বরিশাল</option>
-                <option value='sylhet'>সিলেট</option>
-                <option value='rangpur'>রংপুর</option>
-                <option value='mymensingh'>ময়মনসিংহ</option>
+                <option value='ঢাকা'>ঢাকা</option>
+                <option value='চট্টগ্রাম'>চট্টগ্রাম</option>
+                <option value='রাজশাহী'>রাজশাহী</option>
+                <option value='খুলনা'>খুলনা</option>
+                <option value='বরিশাল'>বরিশাল</option>
+                <option value='সিলেট'>সিলেট</option>
+                <option value='রংপুর'>রংপুর</option>
+                <option value='ময়মনসিংহ'>ময়মনসিংহ</option>
               </motion.select>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='district' className='block text-gray-700 mb-2'>
-                জেলা
+                জেলা *
               </label>
               <motion.select
                 id='district'
+                name='district'
+                value={formData.district}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 variants={selectVariants}
                 whileFocus='focus'
+                required
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='brahmanbaria'>ব্রাহ্মনবাড়িয়া</option>
-                <option value='dhaka'>ঢাকা</option>
-                <option value='chittagong'>চট্টগ্রাম</option>
-                <option value='comilla'>কুমিল্লা</option>
-                <option value='sylhet'>সিলেট</option>
+                <option value='ঢাকা'>ঢাকা</option>
+                <option value='ব্রাহ্মনবাড়িয়া'>ব্রাহ্মনবাড়িয়া</option>
+                <option value='চট্টগ্রাম'>চট্টগ্রাম</option>
+                <option value='কুমিল্লা'>কুমিল্লা</option>
+                <option value='সিলেট'>সিলেট</option>
               </motion.select>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='thana' className='block text-gray-700 mb-2'>
-                থানা
+                থানা *
               </label>
               <motion.select
                 id='thana'
+                name='thana'
+                value={formData.thana}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 variants={selectVariants}
                 whileFocus='focus'
+                required
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='brahmanbaria-sadar'>ব্রাহ্মনবাড়িয়া সদর</option>
-                <option value='kasba'>কসবা</option>
-                <option value='nasirnagar'>নাসিরনগর</option>
-                <option value='sarail'>সরাইল</option>
-                <option value='ashuganj'>আশুগঞ্জ</option>
-                <option value='akhaura'>আখাউড়া</option>
-                <option value='bancharampur'>বাঞ্ছারামপুর</option>
-                <option value='bijoynagar'>বিজয়নগর</option>
-                <option value='nabinagar'>নবীনগর</option>
+                <option value='গুলশান'>গুলশান</option>
+                <option value='ব্রাহ্মনবাড়িয়া সদর'>
+                  ব্রাহ্মনবাড়িয়া সদর
+                </option>
+                <option value='কসবা'>কসবা</option>
+                <option value='নাসিরনগর'>নাসিরনগর</option>
+                <option value='সরাইল'>সরাইল</option>
+                <option value='আশুগঞ্জ'>আশুগঞ্জ</option>
+                <option value='আখাউড়া'>আখাউড়া</option>
+                <option value='বাঞ্ছারামপুর'>বাঞ্ছারামপুর</option>
+                <option value='বিজয়নগর'>বিজয়নগর</option>
+                <option value='নবীনগর'>নবীনগর</option>
               </motion.select>
             </motion.div>
 
@@ -197,50 +294,63 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 htmlFor='constituency'
                 className='block text-gray-700 mb-2'
               >
-                আসন
+                আসন *
               </label>
               <motion.input
                 type='text'
                 id='constituency'
+                name='constituency'
+                value={formData.constituency}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               />
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='union' className='block text-gray-700 mb-2'>
-                ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন
+                ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন *
               </label>
               <motion.select
                 id='union'
+                name='union'
+                value={formData.union}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 variants={selectVariants}
                 whileFocus='focus'
+                required
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='union'>ইউনিয়ন</option>
-                <option value='pourashava'>পৌরসভা</option>
-                <option value='city-corporation'>সিটি কর্পোরেশন</option>
+                <option value='গুলশান'>গুলশান</option>
+                <option value='ইউনিয়ন'>ইউনিয়ন</option>
+                <option value='পৌরসভা'>পৌরসভা</option>
+                <option value='সিটি কর্পোরেশন'>সিটি কর্পোরেশন</option>
               </motion.select>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='ward' className='block text-gray-700 mb-2'>
-                ওয়ার্ড
+                ওয়ার্ড *
               </label>
               <motion.input
                 type='text'
                 id='ward'
+                name='ward'
+                value={formData.ward}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               />
             </motion.div>
           </motion.div>
@@ -262,13 +372,14 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
             </motion.button>
             <motion.button
               type='button'
-              onClick={onNext}
-              className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f]'
+              onClick={handleNext}
+              disabled={isUpdating}
+              className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover='hover'
-              whileTap='tap'
+              whileHover={isUpdating ? {} : "hover"}
+              whileTap={isUpdating ? {} : "tap"}
             >
-              পরবর্তী ধাপে যান
+              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
             </motion.button>
           </motion.div>
         </motion.form>
