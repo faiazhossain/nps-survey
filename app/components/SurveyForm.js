@@ -2,12 +2,90 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
 import SurveyFormStep2 from "./SurveyFormStep2";
+import {
+  updateSurveyWithPersonDetails,
+  setCurrentSurveyId,
+  createSurvey,
+} from "../store/surveyCreateSlice";
 
 export default function SurveyForm() {
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: "",
+    age: "",
+    gender: "",
+    religion: "",
+    occupation: "",
+  });
+
+  const dispatch = useDispatch();
+  const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
+    (state) => state.surveyCreate
+  );
+
+  // Get survey ID from URL parameters or Redux state
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const surveyId = urlParams.get("id");
+    if (surveyId && !currentSurveyId) {
+      dispatch(setCurrentSurveyId(parseInt(surveyId)));
+    }
+  }, [currentSurveyId, dispatch]);
+
+  // Handle successful update
+  useEffect(() => {
+    if (updateSuccess) {
+      setStep(2);
+    }
+  }, [updateSuccess]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleNext = async () => {
+    if (!currentSurveyId) {
+      // If no survey ID, create a new survey first
+      alert("সার্ভে ID পাওয়া যায়নি। নতুন সার্ভে তৈরি করা হচ্ছে...");
+      dispatch(createSurvey({}));
+      return;
+    }
+
+    // Validate required fields
+    if (
+      !formData.name ||
+      !formData.age ||
+      !formData.gender ||
+      !formData.religion ||
+      !formData.occupation
+    ) {
+      alert("অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।");
+      return;
+    }
+
+    const personDetails = {
+      নাম: formData.name,
+      বয়স: parseInt(formData.age),
+      লিঙ্গ: formData.gender,
+      ধর্ম: formData.religion,
+      পেশা: formData.occupation,
+    };
+
+    dispatch(
+      updateSurveyWithPersonDetails({
+        surveyId: currentSurveyId,
+        personDetails,
+      })
+    );
+  };
 
   // Animation variants
   const containerVariants = {
@@ -117,25 +195,44 @@ export default function SurveyForm() {
           </motion.div>
         </motion.div>
 
+        {/* Error Display */}
+        {error && (
+          <motion.div
+            className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            সার্ভে আপডেট করতে সমস্যা: {error}
+          </motion.div>
+        )}
+
         {/* Form Fields */}
-        <motion.form className='space-y-6' variants={itemVariants}>
+        <motion.form
+          className='space-y-6'
+          variants={itemVariants}
+          onSubmit={(e) => e.preventDefault()}
+        >
           <motion.div className='space-y-4' variants={containerVariants}>
             <motion.div variants={itemVariants}>
               <label
                 htmlFor='name'
                 className='block text-gray-500 mb-2 text-[14px]'
               >
-                নাম
+                নাম *
               </label>
               <motion.input
                 type='text'
                 id='name'
+                name='name'
+                value={formData.name}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               />
             </motion.div>
 
@@ -144,17 +241,23 @@ export default function SurveyForm() {
                 htmlFor='age'
                 className='block text-gray-500 mb-2 text-[14px]'
               >
-                বয়স
+                বয়স *
               </label>
               <motion.input
                 type='number'
                 id='age'
+                name='age'
+                value={formData.age}
+                onChange={handleInputChange}
+                min='1'
+                max='120'
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               />
             </motion.div>
 
@@ -163,21 +266,25 @@ export default function SurveyForm() {
                 htmlFor='gender'
                 className='block text-gray-500 mb-2 text-[14px]'
               >
-                লিঙ্গ
+                লিঙ্গ *
               </label>
               <motion.select
                 id='gender'
+                name='gender'
+                value={formData.gender}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='male'>পুরুষ</option>
-                <option value='female'>মহিলা</option>
-                <option value='other'>অন্যান্য</option>
+                <option value='পুরুষ'>পুরুষ</option>
+                <option value='মহিলা'>মহিলা</option>
+                <option value='অন্যান্য'>অন্যান্য</option>
               </motion.select>
             </motion.div>
 
@@ -186,23 +293,27 @@ export default function SurveyForm() {
                 htmlFor='religion'
                 className='block text-gray-500 mb-2 text-[14px]'
               >
-                ধর্ম
+                ধর্ম *
               </label>
               <motion.select
                 id='religion'
+                name='religion'
+                value={formData.religion}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='islam'>ইসলাম</option>
-                <option value='hinduism'>হিন্দু</option>
-                <option value='buddhism'>বৌদ্ধ</option>
-                <option value='christianity'>খ্রিস্টান</option>
-                <option value='other'>অন্যান্য</option>
+                <option value='ইসলাম'>ইসলাম</option>
+                <option value='হিন্দু'>হিন্দু</option>
+                <option value='বৌদ্ধ'>বৌদ্ধ</option>
+                <option value='খ্রিস্টান'>খ্রিস্টান</option>
+                <option value='অন্যান্য'>অন্যান্য</option>
               </motion.select>
             </motion.div>
 
@@ -211,17 +322,21 @@ export default function SurveyForm() {
                 htmlFor='occupation'
                 className='block text-gray-500 mb-2 text-[14px]'
               >
-                পেশা
+                পেশা *
               </label>
               <motion.input
                 type='text'
                 id='occupation'
+                name='occupation'
+                value={formData.occupation}
+                onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
+                required
               />
             </motion.div>
           </motion.div>
@@ -246,13 +361,14 @@ export default function SurveyForm() {
             </motion.div>
             <motion.button
               type='button'
-              onClick={() => setStep(2)}
-              className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f]'
+              onClick={handleNext}
+              disabled={isUpdating}
+              className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover='hover'
-              whileTap='tap'
+              whileHover={isUpdating ? {} : "hover"}
+              whileTap={isUpdating ? {} : "tap"}
             >
-              পরবর্তী ধাপে যান
+              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
             </motion.button>
           </motion.div>
         </motion.form>
