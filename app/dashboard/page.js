@@ -64,12 +64,14 @@ export default function Dashboard() {
           className='bg-white p-4 rounded-lg shadow space-y-2'
           variants={cardVariants}
         >
-          <Image
-            src='/images/serveyLogo/docadd.png'
-            alt='docadd'
-            width={20}
-            height={20}
-          />
+          <div className='p-4 rounded-lg bg-green-200 w-fit'>
+            <Image
+              src='/images/serveyLogo/docadd.png'
+              alt='docadd'
+              width={20}
+              height={20}
+            />
+          </div>
           <p className='text-sm text-[#636970]'>আপনার মোট সার্ভে</p>
           <p className='text-2xl font-bold'>১০২</p>
         </motion.div>
@@ -77,12 +79,14 @@ export default function Dashboard() {
           className='bg-white p-4 rounded-lg shadow space-y-2'
           variants={cardVariants}
         >
-          <Image
-            src='/images/serveyLogo/check.png'
-            alt='check'
-            width={20}
-            height={20}
-          />
+          <div className='p-4 rounded-lg bg-blue-200 w-fit'>
+            <Image
+              src='/images/serveyLogo/check.png'
+              alt='check'
+              width={20}
+              height={20}
+            />
+          </div>
           <p className='text-sm text-[#636970]'>অনুমোদিত সার্ভে</p>
           <p className='text-2xl font-bold'>৯০</p>
         </motion.div>
@@ -90,12 +94,14 @@ export default function Dashboard() {
           className='bg-white p-4 rounded-lg shadow space-y-2'
           variants={cardVariants}
         >
-          <Image
-            src='/images/serveyLogo/remove.png'
-            alt='remove'
-            width={20}
-            height={20}
-          />
+          <div className='p-4 rounded-lg bg-red-200 w-fit'>
+            <Image
+              src='/images/serveyLogo/remove.png'
+              alt='remove'
+              width={20}
+              height={20}
+            />
+          </div>
           <p className='text-sm text-[#636970]'>বাতিল সার্ভে</p>
           <p className='text-2xl font-bold'>০৪</p>
         </motion.div>
@@ -103,12 +109,14 @@ export default function Dashboard() {
           className='bg-white p-4 rounded-lg shadow space-y-2'
           variants={cardVariants}
         >
-          <Image
-            src='/images/serveyLogo/add.png'
-            alt='add'
-            width={20}
-            height={20}
-          />
+          <div className='p-4 rounded-lg bg-orange-200 w-fit'>
+            <Image
+              src='/images/serveyLogo/add.png'
+              alt='add'
+              width={20}
+              height={20}
+            />
+          </div>
           <p className='text-sm text-[#636970]'>অপেক্ষামান সার্ভে</p>
           <p className='text-2xl font-bold'>০৮</p>
         </motion.div>
@@ -123,7 +131,8 @@ export default function Dashboard() {
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Link
             href='/survey/new'
-            className='block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700'
+            // className='block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-medium hover:bg-blue-700'
+            className='block w-full text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f]'
           >
             নতুন সার্ভে শুরু করুন
           </Link>
@@ -131,7 +140,7 @@ export default function Dashboard() {
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Link
             href='/survey/history'
-            className='block w-full bg-gray-100 text-gray-800 text-center py-3 rounded-lg font-medium hover:bg-gray-200'
+            className='block w-full text-center rounded-md bg-gradient-to-b from-[#DBFBF1] to-[#dbfbe9] px-4 py-3 text-green-700 hover:bg-gradient-to-b hover:from-[#d3fff1] hover:to-[#bcffee]'
           >
             আপনার সার্ভে হিস্ট্রি দেখুন
           </Link>
