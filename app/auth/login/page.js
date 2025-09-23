@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Login() {
   return (
@@ -101,17 +102,19 @@ export default function Login() {
             </motion.div>
           </div>
 
-          <motion.button
-            type='submit'
-            className='w-full rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-2 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f]'
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-          >
-            লগইন করুন
-          </motion.button>
+          <Link href={"/dashboard"}>
+            <motion.button
+              type='submit'
+              className='w-full rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-2 mt-4 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f]'
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9 }}
+            >
+              লগইন করুন
+            </motion.button>
+          </Link>
         </motion.form>
       </motion.div>
     </div>
