@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import SurveyFormStep2 from "./SurveyFormStep2";
+import SurveyFormStep3 from "./SurveyFormStep3";
 import {
   updateSurveyWithPersonDetails,
   setCurrentSurveyId,
@@ -172,6 +173,17 @@ export default function SurveyForm() {
 
   // Add debugging logs
   console.log("Current step:", step);
+
+  // Render Step 3 component
+  if (step === 3) {
+    console.log("Rendering Step 3 component");
+    return (
+      <SurveyFormStep3
+        onPrevious={() => setStep(2)}
+        onNext={() => setStep(4)}
+      />
+    );
+  }
 
   // Render Step 2 component
   if (step === 2) {

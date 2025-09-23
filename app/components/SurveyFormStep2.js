@@ -6,15 +6,37 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { updateSurveyWithLocationDetails } from "../store/surveyCreateSlice";
+import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep2({ onPrevious, onNext }) {
   const [formData, setFormData] = useState({
     division: "",
+    divisionId: null,
     district: "",
+    districtId: null,
     thana: "",
+    thanaId: null,
     constituency: "",
+    constituencyId: null,
     union: "",
+    unionId: null,
     ward: "",
+  });
+
+  // States for dropdown options
+  const [divisions, setDivisions] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [thanas, setThanas] = useState([]);
+  const [unions, setUnions] = useState([]);
+  const [seats, setSeats] = useState([]);
+
+  // Loading states
+  const [loading, setLoading] = useState({
+    divisions: false,
+    districts: false,
+    thanas: false,
+    unions: false,
+    seats: false,
   });
 
   const dispatch = useDispatch();
@@ -22,21 +44,239 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     (state) => state.surveyCreate
   );
 
+  // Fetch divisions on component load
+  useEffect(() => {
+    fetchDivisions();
+  }, []);
+
+  // Fetch districts when division changes
+  useEffect(() => {
+    if (formData.divisionId) {
+      fetchDistricts(formData.divisionId);
+      // Reset dependent fields
+      setFormData((prev) => ({
+        ...prev,
+        district: "",
+        districtId: null,
+        thana: "",
+        thanaId: null,
+        constituency: "",
+        constituencyId: null,
+        union: "",
+        unionId: null,
+      }));
+      setDistricts([]);
+      setThanas([]);
+      setUnions([]);
+      setSeats([]);
+    }
+  }, [formData.divisionId]);
+
+  // Fetch thanas and seats when district changes
+  useEffect(() => {
+    if (formData.districtId) {
+      fetchThanas(formData.districtId);
+      fetchSeats(formData.districtId);
+      // Reset dependent fields
+      setFormData((prev) => ({
+        ...prev,
+        thana: "",
+        thanaId: null,
+        union: "",
+        unionId: null,
+      }));
+      setThanas([]);
+      setUnions([]);
+    }
+  }, [formData.districtId]);
+
+  // Fetch unions when thana changes
+  useEffect(() => {
+    if (formData.thanaId) {
+      fetchUnions(formData.thanaId);
+      // Reset dependent field
+      setFormData((prev) => ({
+        ...prev,
+        union: "",
+        unionId: null,
+      }));
+      setUnions([]);
+    }
+  }, [formData.thanaId]);
+
+  // Fetch divisions from API
+  const fetchDivisions = async () => {
+    try {
+      setLoading((prev) => ({ ...prev, divisions: true }));
+      const response = await fetch("https://npsbd.xyz/api/divisions", {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          ...getAuthHeaders(),
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch divisions");
+
+      const data = await response.json();
+      setDivisions(data);
+    } catch (error) {
+      console.error("Error fetching divisions:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, divisions: false }));
+    }
+  };
+
+  // Fetch districts from API
+  const fetchDistricts = async (divisionId) => {
+    try {
+      setLoading((prev) => ({ ...prev, districts: true }));
+      const response = await fetch(
+        `https://npsbd.xyz/api/divisions/${divisionId}/districts`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch districts");
+
+      const data = await response.json();
+      setDistricts(data);
+    } catch (error) {
+      console.error("Error fetching districts:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, districts: false }));
+    }
+  };
+
+  // Fetch thanas from API
+  const fetchThanas = async (districtId) => {
+    try {
+      setLoading((prev) => ({ ...prev, thanas: true }));
+      const response = await fetch(
+        `https://npsbd.xyz/api/districts/${districtId}/thanas`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch thanas");
+
+      const data = await response.json();
+      setThanas(data);
+    } catch (error) {
+      console.error("Error fetching thanas:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, thanas: false }));
+    }
+  };
+
+  // Fetch seats (constituencies) from API
+  const fetchSeats = async (districtId) => {
+    try {
+      setLoading((prev) => ({ ...prev, seats: true }));
+      const response = await fetch(
+        `https://npsbd.xyz/api/districts/${districtId}/seats`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch seats");
+
+      const data = await response.json();
+      setSeats(data);
+    } catch (error) {
+      console.error("Error fetching seats:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, seats: false }));
+    }
+  };
+
+  // Fetch unions from API
+  const fetchUnions = async (thanaId) => {
+    try {
+      setLoading((prev) => ({ ...prev, unions: true }));
+      const response = await fetch(
+        `https://npsbd.xyz/api/thanas/${thanaId}/unions`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch unions");
+
+      const data = await response.json();
+      setUnions(data);
+    } catch (error) {
+      console.error("Error fetching unions:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, unions: false }));
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
-  // Handle successful update
-  useEffect(() => {
-    if (updateSuccess) {
-      onNext();
+    if (name === "division") {
+      const selectedDivision = divisions.find((div) => div.bn_name === value);
+      setFormData((prev) => ({
+        ...prev,
+        division: value,
+        divisionId: selectedDivision ? selectedDivision.id : null,
+      }));
+    } else if (name === "district") {
+      const selectedDistrict = districts.find((dist) => dist.bn_name === value);
+      setFormData((prev) => ({
+        ...prev,
+        district: value,
+        districtId: selectedDistrict ? selectedDistrict.id : null,
+      }));
+    } else if (name === "thana") {
+      const selectedThana = thanas.find((th) => th.bn_name === value);
+      setFormData((prev) => ({
+        ...prev,
+        thana: value,
+        thanaId: selectedThana ? selectedThana.id : null,
+      }));
+    } else if (name === "constituency") {
+      const selectedSeat = seats.find((seat) => seat.bn_name === value);
+      setFormData((prev) => ({
+        ...prev,
+        constituency: value,
+        constituencyId: selectedSeat ? selectedSeat.id : null,
+      }));
+    } else if (name === "union") {
+      const selectedUnion = unions.find((un) => un.bn_name === value);
+      setFormData((prev) => ({
+        ...prev,
+        union: value,
+        unionId: selectedUnion ? selectedUnion.id : null,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
-  }, [updateSuccess, onNext]);
+  };
 
   // Handle next button click
   const handleNext = async () => {
@@ -67,12 +307,21 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       ওয়ার্ড: formData.ward,
     };
 
-    dispatch(
-      updateSurveyWithLocationDetails({
-        surveyId: currentSurveyId,
-        locationDetails,
-      })
-    );
+    try {
+      // Send API request to update location details
+      await dispatch(
+        updateSurveyWithLocationDetails({
+          surveyId: currentSurveyId,
+          locationDetails,
+        })
+      );
+      
+      // After API call completes successfully, navigate to the next step
+      onNext();
+    } catch (error) {
+      console.error("Error updating location details:", error);
+      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
+    }
   };
 
   // Animation variants
@@ -135,6 +384,11 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       },
     },
   };
+
+  // Loading spinner component
+  const LoadingSpinner = () => (
+    <div className='inline-block ml-2 animate-spin h-4 w-4 border-2 border-green-500 rounded-full border-t-transparent'></div>
+  );
 
   return (
     <AnimatePresence mode='wait'>
@@ -212,7 +466,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
           <motion.div className='space-y-4' variants={containerVariants}>
             <motion.div variants={itemVariants}>
               <label htmlFor='division' className='block text-gray-700 mb-2'>
-                বিভাগ *
+                বিভাগ *{loading.divisions && <LoadingSpinner />}
               </label>
               <motion.select
                 id='division'
@@ -223,22 +477,20 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 variants={selectVariants}
                 whileFocus='focus'
                 required
+                disabled={loading.divisions}
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='ঢাকা'>ঢাকা</option>
-                <option value='চট্টগ্রাম'>চট্টগ্রাম</option>
-                <option value='রাজশাহী'>রাজশাহী</option>
-                <option value='খুলনা'>খুলনা</option>
-                <option value='বরিশাল'>বরিশাল</option>
-                <option value='সিলেট'>সিলেট</option>
-                <option value='রংপুর'>রংপুর</option>
-                <option value='ময়মনসিংহ'>ময়মনসিংহ</option>
+                {divisions.map((division) => (
+                  <option key={division.id} value={division.bn_name}>
+                    {division.bn_name}
+                  </option>
+                ))}
               </motion.select>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='district' className='block text-gray-700 mb-2'>
-                জেলা *
+                জেলা *{loading.districts && <LoadingSpinner />}
               </label>
               <motion.select
                 id='district'
@@ -249,19 +501,20 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 variants={selectVariants}
                 whileFocus='focus'
                 required
+                disabled={!formData.division || loading.districts}
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='ঢাকা'>ঢাকা</option>
-                <option value='ব্রাহ্মনবাড়িয়া'>ব্রাহ্মনবাড়িয়া</option>
-                <option value='চট্টগ্রাম'>চট্টগ্রাম</option>
-                <option value='কুমিল্লা'>কুমিল্লা</option>
-                <option value='সিলেট'>সিলেট</option>
+                {districts.map((district) => (
+                  <option key={district.id} value={district.bn_name}>
+                    {district.bn_name}
+                  </option>
+                ))}
               </motion.select>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='thana' className='block text-gray-700 mb-2'>
-                থানা *
+                থানা *{loading.thanas && <LoadingSpinner />}
               </label>
               <motion.select
                 id='thana'
@@ -272,20 +525,14 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 variants={selectVariants}
                 whileFocus='focus'
                 required
+                disabled={!formData.district || loading.thanas}
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='গুলশান'>গুলশান</option>
-                <option value='ব্রাহ্মনবাড়িয়া সদর'>
-                  ব্রাহ্মনবাড়িয়া সদর
-                </option>
-                <option value='কসবা'>কসবা</option>
-                <option value='নাসিরনগর'>নাসিরনগর</option>
-                <option value='সরাইল'>সরাইল</option>
-                <option value='আশুগঞ্জ'>আশুগঞ্জ</option>
-                <option value='আখাউড়া'>আখাউড়া</option>
-                <option value='বাঞ্ছারামপুর'>বাঞ্ছারামপুর</option>
-                <option value='বিজয়নগর'>বিজয়নগর</option>
-                <option value='নবীনগর'>নবীনগর</option>
+                {thanas.map((thana) => (
+                  <option key={thana.id} value={thana.bn_name}>
+                    {thana.bn_name}
+                  </option>
+                ))}
               </motion.select>
             </motion.div>
 
@@ -294,27 +541,32 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 htmlFor='constituency'
                 className='block text-gray-700 mb-2'
               >
-                আসন *
+                আসন *{loading.seats && <LoadingSpinner />}
               </label>
-              <motion.input
-                type='text'
+              <motion.select
                 id='constituency'
                 name='constituency'
                 value={formData.constituency}
                 onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
-                whileFocus={{
-                  scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
-                }}
-                transition={{ duration: 0.2 }}
+                variants={selectVariants}
+                whileFocus='focus'
                 required
-              />
+                disabled={!formData.district || loading.seats}
+              >
+                <option value=''>নির্বাচন করুন</option>
+                {seats.map((seat) => (
+                  <option key={seat.id} value={seat.bn_name}>
+                    {seat.bn_name}
+                  </option>
+                ))}
+              </motion.select>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='union' className='block text-gray-700 mb-2'>
                 ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন *
+                {loading.unions && <LoadingSpinner />}
               </label>
               <motion.select
                 id='union'
@@ -325,12 +577,14 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 variants={selectVariants}
                 whileFocus='focus'
                 required
+                disabled={!formData.thana || loading.unions}
               >
                 <option value=''>নির্বাচন করুন</option>
-                <option value='গুলশান'>গুলশান</option>
-                <option value='ইউনিয়ন'>ইউনিয়ন</option>
-                <option value='পৌরসভা'>পৌরসভা</option>
-                <option value='সিটি কর্পোরেশন'>সিটি কর্পোরেশন</option>
+                {unions.map((union) => (
+                  <option key={union.id} value={union.bn_name}>
+                    {union.bn_name}
+                  </option>
+                ))}
               </motion.select>
             </motion.div>
 
