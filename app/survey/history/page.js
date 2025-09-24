@@ -241,7 +241,7 @@ export default function SurveyHistory() {
           >
             <div className='bg-white rounded-xl p-4 sm:p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl'>
               {/* Header */}
-              <div className='flex justify-between items-center mb-4 border-b pb-3'>
+              <div className='flex justify-between items-center mb-6 border-b pb-3'>
                 <h2 className='text-2xl font-bold text-gray-900'>
                   সার্ভে বিস্তারিত
                 </h2>
@@ -254,7 +254,7 @@ export default function SurveyHistory() {
               </div>
 
               {detailsError && (
-                <div className='bg-red-50 border-l-2 border-red-500 text-red-700 p-3 rounded-md mb-4 text-sm'>
+                <div className='bg-red-50 border-l-2 border-red-500 text-red-700 p-3 rounded-md mb-6 text-sm'>
                   {detailsError}
                 </div>
               )}
@@ -267,9 +267,9 @@ export default function SurveyHistory() {
                 </div>
               ) : (
                 <div className='space-y-6'>
-                  {/* Survey Basic Info */}
-                  <div className='space-y-3'>
-                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-1'>
+                  {/* Survey Basic Info Card */}
+                  <div className='bg-white border rounded-lg shadow-sm p-5'>
+                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-2 mb-4'>
                       সাধারণ তথ্য
                     </h3>
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -326,9 +326,9 @@ export default function SurveyHistory() {
                     </div>
                   </div>
 
-                  {/* Person Details */}
-                  <div className='space-y-3'>
-                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-1'>
+                  {/* Person Details Card */}
+                  <div className='bg-white border rounded-lg shadow-sm p-5'>
+                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-2 mb-4'>
                       ব্যক্তির তথ্য
                     </h3>
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -412,9 +412,9 @@ export default function SurveyHistory() {
                     </div>
                   </div>
 
-                  {/* Location Details */}
-                  <div className='space-y-3'>
-                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-1'>
+                  {/* Location Details Card */}
+                  <div className='bg-white border rounded-lg shadow-sm p-5'>
+                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-2 mb-4'>
                       অবস্থানের তথ্য
                     </h3>
                     <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -478,9 +478,9 @@ export default function SurveyHistory() {
                     </div>
                   </div>
 
-                  {/* Demand Details */}
-                  <div className='space-y-3'>
-                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-1'>
+                  {/* Demand Details Card */}
+                  <div className='bg-white border rounded-lg shadow-sm p-5'>
+                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-2 mb-4'>
                       চাহিদার তথ্য
                     </h3>
                     <div className='space-y-2'>
@@ -505,12 +505,12 @@ export default function SurveyHistory() {
                     </div>
                   </div>
 
-                  {/* Party and Candidate Details */}
-                  <div className='space-y-3'>
-                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-1'>
+                  {/* Party and Candidate Details Card */}
+                  <div className='bg-white border rounded-lg shadow-sm p-5'>
+                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-2 mb-4'>
                       দল ও প্রার্থীর তথ্য
                     </h3>
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4'>
                       <div>
                         <span className='text-gray-500 text-xs font-medium'>
                           মূল্যবান দল
@@ -558,12 +558,12 @@ export default function SurveyHistory() {
                     </div>
                   </div>
 
-                  {/* Selected Candidate Details */}
-                  <div className='space-y-3'>
-                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-1'>
+                  {/* Selected Candidate Details Card */}
+                  <div className='bg-white border rounded-lg shadow-sm p-5'>
+                    <h3 className='text-xl font-semibold text-gray-900 border-b pb-2 mb-4'>
                       নির্বাচিত প্রার্থীর তথ্য
                     </h3>
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4'>
                       <div>
                         <span className='text-gray-500 text-xs font-medium'>
                           নির্বাচিত প্রার্থী
@@ -586,7 +586,7 @@ export default function SurveyHistory() {
                         </p>
                       </div>
                     </div>
-                    <div className='space-y-2'>
+                    <div className='space-y-2 mb-4'>
                       <span className='text-gray-500 text-xs font-medium'>
                         প্রার্থীর যোগ্যতার মাপকাঠি
                       </span>
