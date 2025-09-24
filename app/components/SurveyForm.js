@@ -377,9 +377,9 @@ export default function SurveyForm() {
                 required
               >
                 <option value=''>নির্বাচন করুন</option>
+                <option value='নারী'>নারী</option>
                 <option value='পুরুষ'>পুরুষ</option>
-                <option value='মহিলা'>মহিলা</option>
-                <option value='অন্যান্য'>অন্যান্য</option>
+                <option value='তৃতীয় লিঙ্গ'>তৃতীয় লিঙ্গ</option>
               </motion.select>
             </motion.div>
 
@@ -406,8 +406,9 @@ export default function SurveyForm() {
                 <option value=''>নির্বাচন করুন</option>
                 <option value='ইসলাম'>ইসলাম</option>
                 <option value='হিন্দু'>হিন্দু</option>
-                <option value='বৌদ্ধ'>বৌদ্ধ</option>
                 <option value='খ্রিস্টান'>খ্রিস্টান</option>
+                <option value='বৌদ্ধ'>বৌদ্ধ</option>
+                <option value='আদিবাসী'>আদিবাসী</option>
                 <option value='অন্যান্য'>অন্যান্য</option>
               </motion.select>
             </motion.div>
@@ -419,8 +420,7 @@ export default function SurveyForm() {
               >
                 পেশা *
               </label>
-              <motion.input
-                type='text'
+              <motion.select
                 id='occupation'
                 name='occupation'
                 value={formData.occupation}
@@ -432,7 +432,39 @@ export default function SurveyForm() {
                 }}
                 transition={{ duration: 0.2 }}
                 required
-              />
+              >
+                <option value=''>নির্বাচন করুন</option>
+                <option value='শিক্ষার্থী (কলেজ)'>শিক্ষার্থী (কলেজ)</option>
+                <option value='শিক্ষার্থী (বিশ্ববিদ্যালয়)'>
+                  শিক্ষার্থী (বিশ্ববিদ্যালয়)
+                </option>
+                <option value='কৃষক'>কৃষক</option>
+                <option value='শিক্ষক/শিক্ষিকা'>শিক্ষক/শিক্ষিকা</option>
+                <option value='চিকিৎসক/নার্স'>চিকিৎসক/নার্স</option>
+                <option value='ইঞ্জিনিয়ার'>ইঞ্জিনিয়ার</option>
+                <option value='ব্যবসায়ী'>ব্যবসায়ী</option>
+                <option value='সরকারি চাকরিজীবী'>সরকারি চাকরিজীবী</option>
+                <option value='ব্যাংক কর্মকর্তা'>ব্যাংক কর্মকর্তা</option>
+                <option value='মার্কেটিং/বিক্রয় প্রতিনিধি'>
+                  মার্কেটিং/বিক্রয় প্রতিনিধি
+                </option>
+                <option value='আইটি পেশাজীবী'>আইটি পেশাজীবী</option>
+                <option value='মিডিয়া কর্মী'>মিডিয়া কর্মী</option>
+                <option value='কর্মচারী'>কর্মচারী</option>
+                <option value='নির্মাণ/মিস্ত্রি'>নির্মাণ/মিস্ত্রি</option>
+                <option value='গৃহকর্মী'>গৃহকর্মী</option>
+                <option value='ফ্রিল্যান্সার'>ফ্রিল্যান্সার</option>
+                <option value='অ্যাডভোকেট/আইনজীবী'>অ্যাডভোকেট/আইনজীবী</option>
+                <option value='সামাজিক কাজ/NGO কর্মী'>
+                  সামাজিক কাজ/NGO কর্মী
+                </option>
+                <option value='শিল্পী'>শিল্পী</option>
+                <option value='বিপণন/বিক্রয় বিশেষজ্ঞ'>
+                  বিপণন/বিক্রয় বিশেষজ্ঞ
+                </option>
+                <option value='খুচরা ব্যবসায়ী'>খুচরা ব্যবসায়ী</option>
+                <option value='অন্য'>অন্য</option>
+              </motion.select>
             </motion.div>
           </motion.div>
 

@@ -27,7 +27,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [thanas, setThanas] = useState([]);
-  const [unions, setUnions] = useState([]);
   const [seats, setSeats] = useState([]);
 
   // Loading states
@@ -35,7 +34,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     divisions: false,
     districts: false,
     thanas: false,
-    unions: false,
     seats: false,
   });
 
@@ -67,7 +65,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       }));
       setDistricts([]);
       setThanas([]);
-      setUnions([]);
       setSeats([]);
     }
   }, [formData.divisionId]);
@@ -86,23 +83,8 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
         unionId: null,
       }));
       setThanas([]);
-      setUnions([]);
     }
   }, [formData.districtId]);
-
-  // Fetch unions when thana changes
-  useEffect(() => {
-    if (formData.thanaId) {
-      fetchUnions(formData.thanaId);
-      // Reset dependent field
-      setFormData((prev) => ({
-        ...prev,
-        union: "",
-        unionId: null,
-      }));
-      setUnions([]);
-    }
-  }, [formData.thanaId]);
 
   // Fetch divisions from API
   const fetchDivisions = async () => {
@@ -205,32 +187,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     }
   };
 
-  // Fetch unions from API
-  const fetchUnions = async (thanaId) => {
-    try {
-      setLoading((prev) => ({ ...prev, unions: true }));
-      const response = await fetch(
-        `https://npsbd.xyz/api/thanas/${thanaId}/unions`,
-        {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            ...getAuthHeaders(),
-          },
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch unions");
-
-      const data = await response.json();
-      setUnions(data);
-    } catch (error) {
-      console.error("Error fetching unions:", error);
-    } finally {
-      setLoading((prev) => ({ ...prev, unions: false }));
-    }
-  };
-
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -263,13 +219,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
         constituency: value,
         constituencyId: selectedSeat ? selectedSeat.id : null,
       }));
-    } else if (name === "union") {
-      const selectedUnion = unions.find((un) => un.bn_name === value);
-      setFormData((prev) => ({
-        ...prev,
-        union: value,
-        unionId: selectedUnion ? selectedUnion.id : null,
-      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -291,10 +240,11 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       !formData.district ||
       !formData.thana ||
       !formData.constituency ||
-      !formData.union ||
-      !formData.ward
+      (!formData.union && !formData.ward)
     ) {
-      alert("অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।");
+      alert(
+        "অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র পূরণ করুন। ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন অথবা ওয়ার্ড এর মধ্যে অন্তত একটি পূরণ করতে হবে।"
+      );
       return;
     }
 
@@ -315,7 +265,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
           locationDetails,
         })
       );
-      
+
       // After API call completes successfully, navigate to the next step
       onNext();
     } catch (error) {
@@ -565,32 +515,26 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
 
             <motion.div variants={itemVariants}>
               <label htmlFor='union' className='block text-gray-700 mb-2'>
-                ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন *
-                {loading.unions && <LoadingSpinner />}
+                ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন
               </label>
-              <motion.select
+              <motion.input
+                type='text'
                 id='union'
                 name='union'
                 value={formData.union}
                 onChange={handleInputChange}
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
-                variants={selectVariants}
-                whileFocus='focus'
-                required
-                disabled={!formData.thana || loading.unions}
-              >
-                <option value=''>নির্বাচন করুন</option>
-                {unions.map((union) => (
-                  <option key={union.id} value={union.bn_name}>
-                    {union.bn_name}
-                  </option>
-                ))}
-              </motion.select>
+                whileFocus={{
+                  scale: 1.01,
+                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                }}
+                transition={{ duration: 0.2 }}
+              />
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <label htmlFor='ward' className='block text-gray-700 mb-2'>
-                ওয়ার্ড *
+                ওয়ার্ড
               </label>
               <motion.input
                 type='text'
@@ -604,7 +548,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                   boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
                 }}
                 transition={{ duration: 0.2 }}
-                required
               />
             </motion.div>
           </motion.div>
