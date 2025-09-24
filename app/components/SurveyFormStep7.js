@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
+import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep7({ onPrevious, onNext }) {
   const [loading, setLoading] = useState(false);
@@ -63,11 +64,16 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
           body: JSON.stringify({
             selected_candidate_details: {
               "আপনি কিভাবে এই প্রার্থীকে চিনেন?": selectedRelation,
-              "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?": qualifications,
-              "এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?": hasBadQualities
-                ? "হ্যাঁ"
-                : "না",
-              ...(hasBadQualities && { "খারাপ দিক সমূহ": badQualities }),
+              "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?": {
+                সততা: qualifications.সততা,
+                মানবিক: qualifications.মানবিক,
+                রুচিশীল: qualifications.রুচিশীল,
+                আদর্শবান: qualifications.আদর্শবান,
+                জনপ্রিয়: qualifications.জনপ্রিয়,
+                সত্যবাদী: qualifications.সত্যবাদী,
+                দূরদর্শিতা: qualifications.দূরদর্শিতা,
+                দেশপ্রেম: qualifications.দেশপ্রেমিক,
+              },
             },
           }),
         }
@@ -224,7 +230,12 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
               required
             >
               <option value=''>নির্বাচন করুন</option>
-              {/* Add candidate options here */}
+              <option value='রহিম উদ্দিন'>রহিম উদ্দিন</option>
+              <option value='করিমুল হক'>করিমুল হক</option>
+              <option value='আব্দুল্লাহ আল মামুন'>আব্দুল্লাহ আল মামুন</option>
+              <option value='মাওলানা আব্দুর রশিদ'>মাওলানা আব্দুর রশিদ</option>
+              <option value='নাসির উদ্দিন'>নাসির উদ্দিন</option>
+              <option value='হাফেজ মোহাম্মদ আলী'>হাফেজ মোহাম্মদ আলী</option>
             </select>
           </motion.div>
 

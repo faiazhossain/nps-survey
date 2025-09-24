@@ -4,16 +4,80 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep8({ onPrevious }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    publicWorks: "",
+    popularParty: "",
+  });
 
+  const router = useRouter();
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
     (state) => state.surveyCreate
   );
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!currentSurveyId) {
+      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      return;
+    }
+
+    if (!formData.publicWorks || !formData.popularParty) {
+      alert("অনুগ্রহ করে সব তথ্য পূরণ করুন।");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
+        {
+          method: "PATCH",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            candidate_work_details: {
+              "সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?":
+                formData.publicWorks,
+              "আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে জনপ্রিয়?":
+                formData.popularParty,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      await response.json();
+      console.log("Survey completed successfully");
+
+      // Navigate to survey history page
+      router.push("/survey/history");
+    } catch (error) {
+      console.error("Error submitting survey:", error);
+      setError("সার্ভে জমা দিতে সমস্যা হয়েছে।");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Animation variants
   const containerVariants = {
@@ -137,6 +201,39 @@ export default function SurveyFormStep8({ onPrevious }) {
           </motion.div>
         )}
 
+        {/* Form Fields */}
+        <motion.div className='space-y-6' variants={itemVariants}>
+          <motion.div variants={itemVariants} className='mb-6'>
+            <label htmlFor='publicWorks' className='block text-gray-700 mb-2'>
+              সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?
+            </label>
+            <textarea
+              id='publicWorks'
+              name='publicWorks'
+              value={formData.publicWorks}
+              onChange={handleInputChange}
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[100px]'
+              required
+            />
+          </motion.div>
+
+          <motion.div variants={itemVariants} className='mb-6'>
+            <label htmlFor='popularParty' className='block text-gray-700 mb-2'>
+              আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে
+              জনপ্রিয়?
+            </label>
+            <input
+              type='text'
+              id='popularParty'
+              name='popularParty'
+              value={formData.popularParty}
+              onChange={handleInputChange}
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
+              required
+            />
+          </motion.div>
+        </motion.div>
+
         {/* Navigation Buttons */}
         <motion.div
           className='flex flex-col sm:flex-row gap-3 sm:gap-4 justify-around pt-4 sm:pt-6'
@@ -154,14 +251,14 @@ export default function SurveyFormStep8({ onPrevious }) {
           </motion.button>
           <motion.button
             type='button'
-            onClick={() => {}}
-            disabled={isUpdating}
+            onClick={handleSubmit}
+            disabled={loading || isUpdating}
             className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
             variants={buttonVariants}
-            whileHover={isUpdating ? {} : "hover"}
-            whileTap={isUpdating ? {} : "tap"}
+            whileHover={loading || isUpdating ? {} : "hover"}
+            whileTap={loading || isUpdating ? {} : "tap"}
           >
-            {isUpdating ? "সংরক্ষণ হচ্ছে..." : "সম্পন্ন করুন"}
+            {loading ? "জমা দেওয়া হচ্ছে..." : "ফর্ম জমা দিন"}
           </motion.button>
         </motion.div>
       </motion.div>

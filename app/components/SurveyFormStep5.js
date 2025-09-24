@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { getAuthHeaders } from '../utils/auth';
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [partyData, setPartyData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
@@ -22,10 +22,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       try {
         setLoading(true);
         const response = await fetch(
-          'https://npsbd.xyz/api/party/details/201',
+          "https://npsbd.xyz/api/party/details/201",
           {
             headers: {
-              accept: 'application/json',
+              accept: "application/json",
               ...getAuthHeaders(),
             },
           }
@@ -52,8 +52,8 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
         setPartyData(transformedData);
       } catch (error) {
-        console.error('Error fetching party details:', error);
-        setError('পার্টি তথ্য লোড করতে সমস্যা হয়েছে।');
+        console.error("Error fetching party details:", error);
+        setError("পার্টি তথ্য লোড করতে সমস্যা হয়েছে।");
       } finally {
         setLoading(false);
       }
@@ -126,7 +126,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
               name: newName,
               candidates: party.candidates.map((candidate) => ({
                 ...candidate,
-                id: `${newName}_${candidate.id.split('_')[1]}`,
+                id: `${newName}_${candidate.id.split("_")[1]}`,
               })),
             }
           : party
@@ -158,7 +158,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert('সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।');
+      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
       return;
     }
 
@@ -171,7 +171,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             const filteredCandidates = party.candidates
               .filter(
                 (candidate) =>
-                  candidate.name.trim() !== '' && candidate.name !== 'add_new'
+                  candidate.name.trim() !== "" && candidate.name !== "add_new"
               )
               .map((candidate) => candidate.name);
 
@@ -191,10 +191,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
+            accept: "application/json",
+            "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
           body: JSON.stringify(availPartyDetailsData),
@@ -206,24 +206,24 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log('Survey updated successfully with candidate details');
+      console.log("Survey updated successfully with candidate details");
 
       // Navigate to next step after successful API call
       onNext();
     } catch (error) {
-      console.error('Error updating survey:', error);
-      alert('সার্ভে আপডেট করতে সমস্যা হয়েছে।');
+      console.error("Error updating survey:", error);
+      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
     }
   };
 
   // Convert number to Bengali numeral
   const toBengaliNumber = (num) => {
-    const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    const bengaliNumbers = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
     return num
       .toString()
-      .split('')
+      .split("")
       .map((digit) => bengaliNumbers[parseInt(digit)])
-      .join('');
+      .join("");
   };
 
   // Animation variants
@@ -234,7 +234,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: "easeOut",
         staggerChildren: 0.08,
       },
     },
@@ -243,7 +243,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
@@ -255,7 +255,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
   };
@@ -265,7 +265,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: 'easeInOut',
+        ease: "easeInOut",
       },
     },
     tap: {
@@ -283,12 +283,12 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
     hover: {
       scale: 1.02,
-      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
       transition: {
         duration: 0.2,
       },
@@ -298,7 +298,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   // Get all candidates for dropdown
   const allCandidates = partyData
     .flatMap((party) => party.candidates.map((candidate) => candidate.name))
-    .filter((name) => name.trim() !== '');
+    .filter((name) => name.trim() !== "");
 
   return (
     <AnimatePresence mode='wait'>
@@ -521,12 +521,12 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                           </motion.button>
                         </div>
 
-                        {candidate.name === 'add_new' && (
+                        {candidate.name === "add_new" && (
                           <input
                             type='text'
                             placeholder='নতুন প্রার্থীর নাম লিখুন'
                             onBlur={(e) => {
-                              if (e.target.value.trim() !== '') {
+                              if (e.target.value.trim() !== "") {
                                 addNewCandidate(party.name, e.target.value);
                               }
                             }}
@@ -541,7 +541,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                         updateCandidateSelection(
                           party.name,
                           party.candidates.length,
-                          'add_new'
+                          "add_new"
                         )
                       }
                       className='flex items-center justify-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-md border border-green-200 transition-colors w-full sm:w-auto text-sm sm:text-base'
@@ -602,10 +602,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                 disabled={isUpdating}
                 className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
                 variants={buttonVariants}
-                whileHover={isUpdating ? {} : 'hover'}
-                whileTap={isUpdating ? {} : 'tap'}
+                whileHover={isUpdating ? {} : "hover"}
+                whileTap={isUpdating ? {} : "tap"}
               >
-                {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
+                {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
               </motion.button>
             </motion.div>
           </motion.div>
