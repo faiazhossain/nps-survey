@@ -1,18 +1,79 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function SurveyFormStep6({ onPrevious, onNext }) {
-  const [loading, setLoading] = useState(false);
+  const [partyData, setPartyData] = useState([]);
+  const [selectedCandidates, setSelectedCandidates] = useState({});
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
     (state) => state.surveyCreate
   );
+
+  // Fetch party and candidate data from API
+  useEffect(() => {
+    const fetchPartyData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          'https://npsbd.xyz/api/party/details/201',
+          {
+            headers: {
+              accept: 'application/json',
+              ...getAuthHeaders(),
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Transform the data to match the expected format
+        const transformedData = data.দল.map((party) => {
+          const partyName = Object.keys(party)[0];
+          const candidates = party[partyName];
+          return {
+            name: partyName,
+            candidates: candidates,
+          };
+        });
+
+        setPartyData(transformedData);
+
+        // Initialize selected candidates
+        const initialSelections = {};
+        transformedData.forEach((party) => {
+          initialSelections[party.name] = '';
+        });
+        setSelectedCandidates(initialSelections);
+      } catch (error) {
+        console.error('Error fetching party data:', error);
+        setError('দলের তথ্য লোড করতে সমস্যা হয়েছে।');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPartyData();
+  }, []);
+
+  // Handle candidate selection
+  const handleCandidateSelection = (partyName, candidateName) => {
+    setSelectedCandidates((prev) => ({
+      ...prev,
+      [partyName]: candidateName,
+    }));
+  };
 
   // Handle next button click
   const handleNext = async () => {
@@ -21,15 +82,44 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       return;
     }
 
+    // Prepare candidate details data
+    const candidateDetailsData = {
+      candidate_details: {
+        দল: Object.entries(selectedCandidates)
+          .filter(([partyName, candidateName]) => candidateName.trim() !== '')
+          .map(([partyName, candidateName]) => ({
+            [partyName]: candidateName,
+          })),
+      },
+    };
+
     try {
-      // Here you can add API call for step 6 if needed
-      console.log('Step 6 completed');
+      // Send PATCH request to update survey with selected candidates
+      const response = await fetch(
+        `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify(candidateDetailsData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      await response.json();
+      console.log('Survey updated successfully with selected candidates');
 
       // Navigate to next step
       onNext();
     } catch (error) {
-      console.error('Error in step 6:', error);
-      alert('ধাপ ৬ এ সমস্যা হয়েছে।');
+      console.error('Error updating survey:', error);
+      alert('সার্ভে আপডেট করতে সমস্যা হয়েছে।');
     }
   };
 
@@ -79,6 +169,25 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       scale: 0.98,
       transition: {
         duration: 0.1,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.3,
+        ease: 'easeOut',
+      },
+    },
+    hover: {
+      scale: 1.02,
+      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+      transition: {
+        duration: 0.2,
       },
     },
   };
@@ -155,66 +264,143 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
           </motion.div>
         )}
 
+        {/* Loading State */}
+        {loading && (
+          <motion.div
+            className='flex justify-center items-center py-8'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className='text-lg text-gray-600'>তথ্য লোড হচ্ছে...</div>
+          </motion.div>
+        )}
+
         {/* Main Content */}
-        <motion.div className='space-y-6' variants={itemVariants}>
-          {/* Section Title */}
-          <motion.h2
-            className='text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-center'
-            variants={itemVariants}
-          >
-            ধাপ ৬ - আসছে শীঘ্রই
-          </motion.h2>
+        {!loading && (
+          <motion.div className='space-y-6' variants={itemVariants}>
+            {/* Section Title */}
+            <motion.h2
+              className='text-lg sm:text-xl font-semibold mb-4 sm:mb-6'
+              variants={itemVariants}
+            >
+              আপনার এলাকায় কোন দলের কাকে প্রার্থী করা উচিৎ বলে আপনি মনে করেন?
+            </motion.h2>
 
-          {/* Placeholder Content */}
-          <motion.div
-            className='bg-white border border-gray-200 rounded-lg p-6 sm:p-8 shadow-sm text-center'
-            variants={itemVariants}
-          >
-            <div className='mb-6'>
-              <Image
-                src='/images/serveyLogo/check.png'
-                alt='Coming Soon'
-                width={64}
-                height={64}
-                className='mx-auto mb-4'
-              />
-              <h3 className='text-lg font-semibold text-gray-700 mb-2'>
-                এই ধাপটি শীঘ্রই যোগ করা হবে
-              </h3>
-              <p className='text-gray-600'>
-                আমরা এই বিভাগে কাজ করছি। দয়া করে পরবর্তী ধাপে এগিয়ে যান।
-              </p>
+            {/* Party Cards */}
+            <div className='space-y-4 sm:space-y-6'>
+              {partyData.map((party, partyIndex) => (
+                <motion.div
+                  key={party.name}
+                  className='bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 shadow-sm'
+                  variants={cardVariants}
+                  initial='hidden'
+                  animate='visible'
+                  whileHover='hover'
+                >
+                  {/* Party Name */}
+                  <div className='mb-3 sm:mb-4'>
+                    <label className='block text-base sm:text-lg font-semibold text-gray-800 mb-2'>
+                      দলের নামঃ {party.name}
+                    </label>
+                  </div>
+
+                  {/* Candidate Selection */}
+                  <div className='space-y-2'>
+                    <label className='block text-sm font-medium text-gray-700 mb-2'>
+                      প্রার্থীর নাম
+                    </label>
+
+                    {/* Mobile Layout - Dropdown */}
+                    <div className='sm:hidden'>
+                      <select
+                        value={selectedCandidates[party.name] || ''}
+                        onChange={(e) =>
+                          handleCandidateSelection(party.name, e.target.value)
+                        }
+                        className='w-full p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                      >
+                        <option value=''>প্রার্থী নির্বাচন করুন</option>
+                        {party.candidates.map((candidate, index) => (
+                          <option key={index} value={candidate}>
+                            {candidate}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Desktop Layout - Radio buttons */}
+                    <div className='hidden sm:block'>
+                      <div className='space-y-2'>
+                        {party.candidates.map((candidate, index) => (
+                          <label
+                            key={index}
+                            className='flex items-center space-x-3 cursor-pointer'
+                          >
+                            <input
+                              type='radio'
+                              name={`party_${party.name}`}
+                              value={candidate}
+                              checked={
+                                selectedCandidates[party.name] === candidate
+                              }
+                              onChange={(e) =>
+                                handleCandidateSelection(
+                                  party.name,
+                                  e.target.value
+                                )
+                              }
+                              className='w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500'
+                            />
+                            <span className='text-sm text-gray-700'>
+                              {candidate}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Selected candidate display for mobile */}
+                    {selectedCandidates[party.name] && (
+                      <div className='sm:hidden mt-2 p-2 bg-green-50 border border-green-200 rounded-md'>
+                        <span className='text-sm text-green-700'>
+                          নির্বাচিত: {selectedCandidates[party.name]}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </motion.div>
 
-          {/* Navigation Buttons */}
-          <motion.div
-            className='flex flex-col sm:flex-row gap-3 sm:gap-4 justify-around pt-4 sm:pt-6'
-            variants={itemVariants}
-          >
-            <motion.button
-              type='button'
-              onClick={onPrevious}
-              className='flex-grow text-center rounded-md bg-gradient-to-b from-[#DBFBF1] to-[#dbfbe9] px-4 py-3 text-green-700 hover:bg-gradient-to-b hover:from-[#d3fff1] hover:to-[#bcffee] text-sm sm:text-base'
-              variants={buttonVariants}
-              whileHover='hover'
-              whileTap='tap'
+            {/* Navigation Buttons */}
+            <motion.div
+              className='flex flex-col sm:flex-row gap-3 sm:gap-4 justify-around pt-4 sm:pt-6'
+              variants={itemVariants}
             >
-              আগের ধাপ
-            </motion.button>
-            <motion.button
-              type='button'
-              onClick={handleNext}
-              disabled={isUpdating}
-              className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
-              variants={buttonVariants}
-              whileHover={isUpdating ? {} : 'hover'}
-              whileTap={isUpdating ? {} : 'tap'}
-            >
-              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
-            </motion.button>
+              <motion.button
+                type='button'
+                onClick={onPrevious}
+                className='flex-grow text-center rounded-md bg-gradient-to-b from-[#DBFBF1] to-[#dbfbe9] px-4 py-3 text-green-700 hover:bg-gradient-to-b hover:from-[#d3fff1] hover:to-[#bcffee] text-sm sm:text-base'
+                variants={buttonVariants}
+                whileHover='hover'
+                whileTap='tap'
+              >
+                আগের ধাপ
+              </motion.button>
+              <motion.button
+                type='button'
+                onClick={handleNext}
+                disabled={isUpdating}
+                className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
+                variants={buttonVariants}
+                whileHover={isUpdating ? {} : 'hover'}
+                whileTap={isUpdating ? {} : 'tap'}
+              >
+                {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
+              </motion.button>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        )}
       </motion.div>
     </AnimatePresence>
   );

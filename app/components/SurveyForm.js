@@ -15,6 +15,7 @@ import {
   createSurvey,
 } from '../store/surveyCreateSlice';
 import SurveyFormStep6 from './SurveyFormStep6';
+import SurveyFormStep7 from './SurveyFormStep7';
 
 export default function SurveyForm() {
   const [step, setStep] = useState(1);
@@ -176,8 +177,17 @@ export default function SurveyForm() {
 
   // Add debugging logs
   console.log('Current step:', step);
+  if (step === 7) {
+    console.log('Rendering Step 7 component');
+    return (
+      <SurveyFormStep7
+        onPrevious={() => setStep(6)}
+        onNext={() => setStep(8)}
+      />
+    );
+  }
   if (step === 6) {
-    console.log('Rendering Step 5 component');
+    console.log('Rendering Step 6 component');
     return (
       <SurveyFormStep6
         onPrevious={() => setStep(5)}

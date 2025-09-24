@@ -163,8 +163,8 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     }
 
     // Prepare the candidate details data in the required format
-    const candidateDetailsData = {
-      candidate_details: {
+    const availPartyDetailsData = {
+      avail_party_details: {
         দল: partyData
           .filter((party) => party.candidates.length > 0)
           .map((party) => {
@@ -197,7 +197,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
-          body: JSON.stringify(candidateDetailsData),
+          body: JSON.stringify(availPartyDetailsData),
         }
       );
 
