@@ -207,14 +207,45 @@ export default function SurveyFormStep8({ onPrevious }) {
             <label htmlFor='publicWorks' className='block text-gray-700 mb-2'>
               সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?
             </label>
-            <textarea
+            <select
               id='publicWorks'
               name='publicWorks'
               value={formData.publicWorks}
               onChange={handleInputChange}
-              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[100px]'
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
               required
-            />
+            >
+              <option value='' disabled></option>
+              <option value='মসজিদ-মাদ্রাসা বা মন্দির নির্মান'>
+                মসজিদ-মাদ্রাসা বা মন্দির নির্মান
+              </option>
+              <option value='মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা'>
+                মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা
+              </option>
+              <option value='অসহায় মানুষকে আর্থিক সহযোগিতা'>
+                অসহায় মানুষকে আর্থিক সহযোগিতা
+              </option>
+              <option value='অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া'>
+                অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া
+              </option>
+              <option value='শিক্ষা প্রতিষ্ঠান নির্মান'>
+                শিক্ষা প্রতিষ্ঠান নির্মান
+              </option>
+              <option value='অন্যান্য (উল্লেখ করুন)'>
+                অন্যান্য (উল্লেখ করুন)
+              </option>
+            </select>
+            {formData.publicWorks === "অন্যান্য (উল্লেখ করুন)" && (
+              <textarea
+                id='publicWorksOther'
+                name='publicWorksOther'
+                value={formData.publicWorksOther || ""}
+                onChange={handleInputChange}
+                className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[100px] mt-2'
+                placeholder='অন্যান্য কাজের বিবরণ লিখুন'
+                required
+              />
+            )}
           </motion.div>
 
           <motion.div variants={itemVariants} className='mb-6'>
@@ -222,15 +253,44 @@ export default function SurveyFormStep8({ onPrevious }) {
               আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে
               জনপ্রিয়?
             </label>
-            <input
-              type='text'
+            <select
               id='popularParty'
               name='popularParty'
               value={formData.popularParty}
               onChange={handleInputChange}
               className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
               required
-            />
+            >
+              <option value='' disabled>
+                একটি দল নির্বাচন করুন
+              </option>
+              {[
+                "বিএনপি",
+                "বাংলাদেশ জামায়াতে ইসলামী",
+                "এনসিপি",
+                "আওয়ামী লীগ",
+                "জাতীয় পার্টি",
+                "ওয়ার্কার্স পার্টি",
+                "গণ অধিকার পরিষদ",
+                "ইসলামী শাসনতন্ত্র আন্দোলন",
+                "এলডিপি",
+                "বাসদ",
+                "জাসদ",
+                "সিপিবি",
+                "কল্যাণ পার্টি",
+                "জাগপা",
+                "জেপি",
+                "বিজেপি",
+                "জেএসডি",
+                "জাতীয় দল",
+                "অন্যান্য",
+                "এখনোও বলতে পারছিনা",
+              ].map((party) => (
+                <option key={party} value={party}>
+                  {party}
+                </option>
+              ))}
+            </select>
           </motion.div>
         </motion.div>
 
