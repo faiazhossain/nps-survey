@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuthHeaders } from "../utils/auth";
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function SurveyFormStep3({ onPrevious, onNext }) {
-  const [selectedParty, setSelectedParty] = useState("");
+  const [selectedParty, setSelectedParty] = useState('');
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
@@ -25,21 +25,18 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      alert('সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।');
       return;
     }
 
     if (!selectedParty) {
-      alert("দয়া করে একটি রাজনৈতিক দল নির্বাচন করুন।");
+      alert('দয়া করে একটি রাজনৈতিক দল নির্বাচন করুন।');
       return;
     }
 
     // Prepare the demand details data
     const worthful_party_name = {
-      worthful_party_name: {
-        "আগামীর বাংলাদেশ পরিচালনায় আপনি কোন রাজনৈতিক দলকে যোগ্য মনে করেন?":
-          selectedParty,
-      },
+      worthful_party_name: selectedParty,
     };
 
     try {
@@ -47,10 +44,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify(worthful_party_name),
@@ -62,13 +59,13 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log("Survey updated successfully with demands");
+      console.log('Survey updated successfully with demands');
 
       // Navigate to next step after successful API call
       onNext();
     } catch (error) {
-      console.error("Error updating survey:", error);
-      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
+      console.error('Error updating survey:', error);
+      alert('সার্ভে আপডেট করতে সমস্যা হয়েছে।');
     }
   };
 
@@ -80,7 +77,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -89,7 +86,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -101,7 +98,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -111,7 +108,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -127,41 +124,41 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     unchecked: { scale: 1 },
     hover: {
       scale: 1.05,
-      boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+      boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
     },
   };
 
   // List of Bangladeshi political parties in Bengali
   const politicalParties = [
-    "বাংলাদেশ আওয়ামী লীগ",
-    "বাংলাদেশ জাতীয়তাবাদী দল (বিএনপি)",
-    "জাতীয় পার্টি (জাপা)",
-    "জাতীয় পার্টি (মঞ্জু)",
-    "বাংলাদেশের কমিউনিস্ট পার্টি",
-    "বাংলাদেশের কমিউনিস্ট পার্টি (মার্কসবাদী-লেনিনবাদী)",
-    "বাংলাদেশের সমাজতান্ত্রিক দল",
-    "বাংলাদেশের ওয়ার্কার্স পার্টি",
-    "বাংলাদেশের সাম্যবাদী দল (মার্কসবাদী-লেনিনবাদী)",
-    "ইসলামী ফ্রন্ট বাংলাদেশ",
-    "কৃষক শ্রমিক জনতা লীগ",
-    "গণতন্ত্রী দল",
-    "লিবারেল ডেমোক্রেটিক পার্টি",
-    "জাতীয় সমাজতান্ত্রিক দল",
-    "ইসলামী ঐক্য জোট",
-    "বাংলাদেশ সম্যবাদী দল (মার্কসবাদী-লেনিনবাদী) (বড়ুয়া)",
-    "বাংলাদেশ জাতীয় সমাজতান্ত্রিক দল",
-    "জাতীয় বামপন্থী সমাজতান্ত্রিক দল",
-    "বাংলাদেশের বিপ্লবী ওয়ার্কার্স পার্টি",
-    "খেলাফত মজলিস",
-    "বাংলাদেশ ফ্রিডম পার্টি",
-    "বাংলাদেশ ন্যাশনাল আওয়ামী পার্টি",
-    "বাংলাদেশ খেলাফত মজলিস",
-    "ইসলামী আন্দোলন বাংলাদেশ",
-    "বাংলাদেশ ইসলামী ফ্রন্ট",
-    "বাংলাদেশ জামায়াতে ইসলামী",
-    "গণফ্রন্ট",
-    "জাতীয় জোট",
-    "অন্যান্য",
+    'বাংলাদেশ আওয়ামী লীগ',
+    'বাংলাদেশ জাতীয়তাবাদী দল (বিএনপি)',
+    'জাতীয় পার্টি (জাপা)',
+    'জাতীয় পার্টি (মঞ্জু)',
+    'বাংলাদেশের কমিউনিস্ট পার্টি',
+    'বাংলাদেশের কমিউনিস্ট পার্টি (মার্কসবাদী-লেনিনবাদী)',
+    'বাংলাদেশের সমাজতান্ত্রিক দল',
+    'বাংলাদেশের ওয়ার্কার্স পার্টি',
+    'বাংলাদেশের সাম্যবাদী দল (মার্কসবাদী-লেনিনবাদী)',
+    'ইসলামী ফ্রন্ট বাংলাদেশ',
+    'কৃষক শ্রমিক জনতা লীগ',
+    'গণতন্ত্রী দল',
+    'লিবারেল ডেমোক্রেটিক পার্টি',
+    'জাতীয় সমাজতান্ত্রিক দল',
+    'ইসলামী ঐক্য জোট',
+    'বাংলাদেশ সম্যবাদী দল (মার্কসবাদী-লেনিনবাদী) (বড়ুয়া)',
+    'বাংলাদেশ জাতীয় সমাজতান্ত্রিক দল',
+    'জাতীয় বামপন্থী সমাজতান্ত্রিক দল',
+    'বাংলাদেশের বিপ্লবী ওয়ার্কার্স পার্টি',
+    'খেলাফত মজলিস',
+    'বাংলাদেশ ফ্রিডম পার্টি',
+    'বাংলাদেশ ন্যাশনাল আওয়ামী পার্টি',
+    'বাংলাদেশ খেলাফত মজলিস',
+    'ইসলামী আন্দোলন বাংলাদেশ',
+    'বাংলাদেশ ইসলামী ফ্রন্ট',
+    'বাংলাদেশ জামায়াতে ইসলামী',
+    'গণফ্রন্ট',
+    'জাতীয় জোট',
+    'অন্যান্য',
   ];
 
   return (
@@ -280,10 +277,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
               disabled={isUpdating || !selectedParty}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover={isUpdating || !selectedParty ? {} : "hover"}
-              whileTap={isUpdating || !selectedParty ? {} : "tap"}
+              whileHover={isUpdating || !selectedParty ? {} : 'hover'}
+              whileTap={isUpdating || !selectedParty ? {} : 'tap'}
             >
-              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
             </motion.button>
           </motion.div>
         </motion.form>

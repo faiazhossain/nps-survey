@@ -1,27 +1,29 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import SurveyFormStep2 from "./SurveyFormStep2";
-import SurveyFormStep3 from "./SurveyFormStep3";
-import SurveyFormStep4 from "./SurveyFormStep4";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import SurveyFormStep2 from './SurveyFormStep2';
+import SurveyFormStep3 from './SurveyFormStep3';
+import SurveyFormStep4 from './SurveyFormStep4';
+import SurveyFormStep5 from './SurveyFormStep5';
 import {
   updateSurveyWithPersonDetails,
   setCurrentSurveyId,
   createSurvey,
-} from "../store/surveyCreateSlice";
+} from '../store/surveyCreateSlice';
+import SurveyFormStep6 from './SurveyFormStep6';
 
 export default function SurveyForm() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    gender: "",
-    religion: "",
-    occupation: "",
+    name: '',
+    age: '',
+    gender: '',
+    religion: '',
+    occupation: '',
   });
 
   const dispatch = useDispatch();
@@ -32,7 +34,7 @@ export default function SurveyForm() {
   // Get survey ID from URL parameters or Redux state
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const surveyId = urlParams.get("id");
+    const surveyId = urlParams.get('id');
     if (surveyId && !currentSurveyId) {
       dispatch(setCurrentSurveyId(parseInt(surveyId)));
     }
@@ -71,7 +73,7 @@ export default function SurveyForm() {
           updatePersonDetails(surveyId, false); // false means don't navigate again
         }
       } catch (error) {
-        console.error("Error creating survey:", error);
+        console.error('Error creating survey:', error);
       }
       return;
     }
@@ -89,16 +91,16 @@ export default function SurveyForm() {
         !formData.religion ||
         !formData.occupation)
     ) {
-      alert("অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।");
+      alert('অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।');
       return;
     }
 
     const personDetails = {
-      নাম: formData.name || "অজানা",
-      বয়স: parseInt(formData.age || "0"),
-      লিঙ্গ: formData.gender || "অজানা",
-      ধর্ম: formData.religion || "অজানা",
-      পেশা: formData.occupation || "অজানা",
+      নাম: formData.name || 'অজানা',
+      বয়স: parseInt(formData.age || '0'),
+      লিঙ্গ: formData.gender || 'অজানা',
+      ধর্ম: formData.religion || 'অজানা',
+      পেশা: formData.occupation || 'অজানা',
     };
 
     try {
@@ -114,7 +116,7 @@ export default function SurveyForm() {
         setStep(2);
       }
     } catch (error) {
-      console.error("Error updating person details:", error);
+      console.error('Error updating person details:', error);
       // Still navigate if this function is responsible for navigation
       if (shouldNavigate) {
         setStep(2);
@@ -130,7 +132,7 @@ export default function SurveyForm() {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.1,
       },
     },
@@ -139,7 +141,7 @@ export default function SurveyForm() {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -151,7 +153,7 @@ export default function SurveyForm() {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -161,7 +163,7 @@ export default function SurveyForm() {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -173,10 +175,29 @@ export default function SurveyForm() {
   };
 
   // Add debugging logs
-  console.log("Current step:", step);
+  console.log('Current step:', step);
+  if (step === 6) {
+    console.log('Rendering Step 5 component');
+    return (
+      <SurveyFormStep6
+        onPrevious={() => setStep(5)}
+        onNext={() => setStep(7)}
+      />
+    );
+  }
+
+  if (step === 5) {
+    console.log('Rendering Step 5 component');
+    return (
+      <SurveyFormStep5
+        onPrevious={() => setStep(4)}
+        onNext={() => setStep(6)}
+      />
+    );
+  }
 
   if (step === 4) {
-    console.log("Rendering Step 4 component");
+    console.log('Rendering Step 4 component');
     return (
       <SurveyFormStep4
         onPrevious={() => setStep(3)}
@@ -186,7 +207,7 @@ export default function SurveyForm() {
   }
   // Render Step 3 component
   if (step === 3) {
-    console.log("Rendering Step 3 component");
+    console.log('Rendering Step 3 component');
     return (
       <SurveyFormStep3
         onPrevious={() => setStep(2)}
@@ -197,7 +218,7 @@ export default function SurveyForm() {
 
   // Render Step 2 component
   if (step === 2) {
-    console.log("Rendering Step 2 component");
+    console.log('Rendering Step 2 component');
     return (
       <SurveyFormStep2
         onPrevious={() => setStep(1)}
@@ -288,7 +309,7 @@ export default function SurveyForm() {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
                 required
@@ -313,7 +334,7 @@ export default function SurveyForm() {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
                 required
@@ -335,7 +356,7 @@ export default function SurveyForm() {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
                 required
@@ -362,7 +383,7 @@ export default function SurveyForm() {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
                 required
@@ -392,7 +413,7 @@ export default function SurveyForm() {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
                 required
@@ -424,10 +445,10 @@ export default function SurveyForm() {
               disabled={isUpdating}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover={isUpdating ? {} : "hover"}
-              whileTap={isUpdating ? {} : "tap"}
+              whileHover={isUpdating ? {} : 'hover'}
+              whileTap={isUpdating ? {} : 'tap'}
             >
-              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
             </motion.button>
           </motion.div>
         </motion.form>
