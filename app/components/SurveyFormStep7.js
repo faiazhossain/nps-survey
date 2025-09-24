@@ -1,13 +1,37 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
+import Image from "next/image";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function SurveyFormStep7({ onPrevious, onNext }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [selectedCandidate, setSelectedCandidate] = useState("");
+  const [selectedRelation, setSelectedRelation] = useState("");
+  const [qualifications, setQualifications] = useState({
+    সততা: 0,
+    আদর্শবান: 0,
+    দেশপ্রেমিক: 0,
+    উচ্চশিক্ষিত: 0,
+    জনপ্রিয়: 0,
+    দূরদর্শিতা: 0,
+    সত্যবাদী: 0,
+    রুচিশীল: 0,
+    মানবিক: 0,
+  });
+  const [hasBadQualities, setHasBadQualities] = useState(null);
+  const [badQualities, setBadQualities] = useState({
+    দূর্নীতি: 0,
+    চাঁদাবাজি: 0,
+    দখলদারিত্ব: 0,
+    হয়রানি: 0,
+    "মাদক বাণিজ্য": 0,
+    "ঘুষ গ্রহণ": 0,
+    সন্ত্রাস: 0,
+    লুটপাট: 0,
+  });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
@@ -17,19 +41,49 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert('সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।');
+      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      return;
+    }
+
+    if (!selectedCandidate || !selectedRelation) {
+      alert("অনুগ্রহ করে সব তথ্য পূরণ করুন।");
       return;
     }
 
     try {
-      // Here you can add API call for step 7 if needed
-      console.log('Step 7 completed');
-      
-      // Navigate to next step
+      const response = await fetch(
+        `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
+        {
+          method: "PATCH",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify({
+            selected_candidate_details: {
+              "আপনি কিভাবে এই প্রার্থীকে চিনেন?": selectedRelation,
+              "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?": qualifications,
+              "এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?": hasBadQualities
+                ? "হ্যাঁ"
+                : "না",
+              ...(hasBadQualities && { "খারাপ দিক সমূহ": badQualities }),
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      await response.json();
+      console.log("Step 7 completed");
+
       onNext();
     } catch (error) {
-      console.error('Error in step 7:', error);
-      alert('ধাপ ৭ এ সমস্যা হয়েছে।');
+      console.error("Error in step 7:", error);
+      setError("ধাপ ৭ এ সমস্যা হয়েছে।");
     }
   };
 
@@ -41,7 +95,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: "easeOut",
         staggerChildren: 0.08,
       },
     },
@@ -50,7 +104,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
@@ -62,7 +116,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
   };
@@ -72,7 +126,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: 'easeInOut',
+        ease: "easeInOut",
       },
     },
     tap: {
@@ -157,34 +211,138 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
 
         {/* Main Content */}
         <motion.div className='space-y-6' variants={itemVariants}>
-          {/* Section Title */}
-          <motion.h2
-            className='text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-center'
-            variants={itemVariants}
-          >
-            ধাপ ৭ - আসছে শীঘ্রই
-          </motion.h2>
+          {/* Candidate Selection */}
+          <motion.div variants={itemVariants} className='mb-6'>
+            <label htmlFor='candidate' className='block text-gray-700 mb-2'>
+              এদের মধ্যে কাকে বেশী যোগ্য বলে মনে হয়?
+            </label>
+            <select
+              id='candidate'
+              value={selectedCandidate}
+              onChange={(e) => setSelectedCandidate(e.target.value)}
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
+              required
+            >
+              <option value=''>নির্বাচন করুন</option>
+              {/* Add candidate options here */}
+            </select>
+          </motion.div>
 
-          {/* Placeholder Content */}
-          <motion.div 
-            className='bg-white border border-gray-200 rounded-lg p-6 sm:p-8 shadow-sm text-center'
-            variants={itemVariants}
-          >
-            <div className='mb-6'>
-              <Image
-                src='/images/serveyLogo/check.png'
-                alt='Coming Soon'
-                width={64}
-                height={64}
-                className='mx-auto mb-4'
-              />
-              <h3 className='text-lg font-semibold text-gray-700 mb-2'>
-                এই ধাপটি শীঘ্রই যোগ করা হবে
-              </h3>
-              <p className='text-gray-600'>
-                আমরা এই বিভাগে কাজ করছি। দয়া করে পরবর্তী ধাপে এগিয়ে যান।
-              </p>
+          {/* Relation Selection */}
+          <motion.div variants={itemVariants} className='mb-6'>
+            <label htmlFor='relation' className='block text-gray-700 mb-2'>
+              আপনি কিভাবে এই প্রার্থীকে চিনেন?
+            </label>
+            <select
+              id='relation'
+              value={selectedRelation}
+              onChange={(e) => setSelectedRelation(e.target.value)}
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
+              required
+            >
+              <option value=''>নির্বাচন করুন</option>
+              <option value='পারিবারিক'>পারিবারিক</option>
+              <option value='রাজনৈতিক'>রাজনৈতিক</option>
+              <option value='ব্যক্তিগত'>ব্যক্তিগত</option>
+              <option value='সামাজিক'>সামাজিক</option>
+            </select>
+          </motion.div>
+
+          {/* Qualifications Checkboxes */}
+          <motion.div variants={itemVariants} className='mb-6'>
+            <h3 className='text-gray-700 mb-3'>
+              এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?
+            </h3>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              {Object.keys(qualifications).map((quality) => (
+                <motion.div
+                  key={quality}
+                  className='flex items-center space-x-3 p-3 border border-gray-200 rounded-md hover:bg-green-50'
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <input
+                    type='checkbox'
+                    id={quality}
+                    checked={qualifications[quality] === 1}
+                    onChange={() =>
+                      setQualifications((prev) => ({
+                        ...prev,
+                        [quality]: prev[quality] === 0 ? 1 : 0,
+                      }))
+                    }
+                    className='w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500'
+                  />
+                  <label htmlFor={quality} className='flex-grow cursor-pointer'>
+                    {quality}
+                  </label>
+                </motion.div>
+              ))}
             </div>
+          </motion.div>
+
+          {/* Bad Qualities Section */}
+          <motion.div variants={itemVariants} className='mb-6'>
+            <h3 className='text-gray-700 mb-3'>
+              এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?
+            </h3>
+            <div className='flex gap-4 mb-4'>
+              <label className='flex items-center space-x-2'>
+                <input
+                  type='radio'
+                  name='hasBadQualities'
+                  checked={hasBadQualities === true}
+                  onChange={() => setHasBadQualities(true)}
+                  className='w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500'
+                />
+                <span>হ্যাঁ</span>
+              </label>
+              <label className='flex items-center space-x-2'>
+                <input
+                  type='radio'
+                  name='hasBadQualities'
+                  checked={hasBadQualities === false}
+                  onChange={() => setHasBadQualities(false)}
+                  className='w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500'
+                />
+                <span>না</span>
+              </label>
+            </div>
+
+            {hasBadQualities && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className='grid grid-cols-1 md:grid-cols-2 gap-3'
+              >
+                {Object.keys(badQualities).map((quality) => (
+                  <motion.div
+                    key={quality}
+                    className='flex items-center space-x-3 p-3 border border-gray-200 rounded-md hover:bg-red-50'
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    <input
+                      type='checkbox'
+                      id={`bad_${quality}`}
+                      checked={badQualities[quality] === 1}
+                      onChange={() =>
+                        setBadQualities((prev) => ({
+                          ...prev,
+                          [quality]: prev[quality] === 0 ? 1 : 0,
+                        }))
+                      }
+                      className='w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500'
+                    />
+                    <label
+                      htmlFor={`bad_${quality}`}
+                      className='flex-grow cursor-pointer'
+                    >
+                      {quality}
+                    </label>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Navigation Buttons */}
@@ -208,10 +366,10 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
               disabled={isUpdating}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
               variants={buttonVariants}
-              whileHover={isUpdating ? {} : 'hover'}
-              whileTap={isUpdating ? {} : 'tap'}
+              whileHover={isUpdating ? {} : "hover"}
+              whileTap={isUpdating ? {} : "tap"}
             >
-              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
+              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
             </motion.button>
           </motion.div>
         </motion.div>
