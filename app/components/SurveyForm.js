@@ -27,6 +27,7 @@ export default function SurveyForm() {
     religion: "",
     occupation: "",
   });
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
@@ -49,6 +50,16 @@ export default function SurveyForm() {
     }
   }, [updateSuccess]);
 
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -58,21 +69,29 @@ export default function SurveyForm() {
   };
 
   const handleNext = async () => {
-    // Option 1: Direct navigation for immediate testing
-    setStep(2);
+    // Validate required fields
+    if (
+      !formData.name ||
+      !formData.age ||
+      !formData.gender ||
+      !formData.religion ||
+      !formData.occupation
+    ) {
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।",
+      });
+      return;
+    }
 
-    // Continue with API call in background
+    // Proceed with API call in background
     if (!currentSurveyId) {
-      // If no survey ID, create a new survey first
       try {
         const result = await dispatch(createSurvey({}));
         if (createSurvey.fulfilled.match(result)) {
-          // Survey created successfully
           const surveyId = result.payload.survey_id;
           dispatch(setCurrentSurveyId(surveyId));
-
-          // Now update with person details
-          updatePersonDetails(surveyId, false); // false means don't navigate again
+          updatePersonDetails(surveyId, false);
         }
       } catch (error) {
         console.error("Error creating survey:", error);
@@ -80,23 +99,10 @@ export default function SurveyForm() {
       return;
     }
 
-    updatePersonDetails(currentSurveyId, false); // false means don't navigate again
+    updatePersonDetails(currentSurveyId, true);
   };
 
   const updatePersonDetails = async (surveyId, shouldNavigate = true) => {
-    // Validate required fields if we're navigating based on this call
-    if (
-      shouldNavigate &&
-      (!formData.name ||
-        !formData.age ||
-        !formData.gender ||
-        !formData.religion ||
-        !formData.occupation)
-    ) {
-      alert("অনুগ্রহ করে সব ক্ষেত্র পূরণ করুন।");
-      return;
-    }
-
     const personDetails = {
       নাম: formData.name || "অজানা",
       বয়স: parseInt(formData.age || "0"),
@@ -113,13 +119,11 @@ export default function SurveyForm() {
         })
       );
 
-      // Only navigate if this function is responsible for navigation
       if (shouldNavigate) {
         setStep(2);
       }
     } catch (error) {
       console.error("Error updating person details:", error);
-      // Still navigate if this function is responsible for navigation
       if (shouldNavigate) {
         setStep(2);
       }
@@ -175,13 +179,32 @@ export default function SurveyForm() {
       },
     },
   };
+
+  const toastVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
   if (step === 8) {
-    console.log("Rendering Step 7 component");
+    console.log("Rendering Step 8 component");
     return <SurveyFormStep8 onPrevious={() => setStep(7)} />;
   }
 
-  // Add debugging logs
-  console.log("Current step:", step);
   if (step === 7) {
     console.log("Rendering Step 7 component");
     return (
@@ -191,6 +214,7 @@ export default function SurveyForm() {
       />
     );
   }
+
   if (step === 6) {
     console.log("Rendering Step 6 component");
     return (
@@ -220,7 +244,7 @@ export default function SurveyForm() {
       />
     );
   }
-  // Render Step 3 component
+
   if (step === 3) {
     console.log("Rendering Step 3 component");
     return (
@@ -231,7 +255,6 @@ export default function SurveyForm() {
     );
   }
 
-  // Render Step 2 component
   if (step === 2) {
     console.log("Rendering Step 2 component");
     return (
@@ -247,12 +270,27 @@ export default function SurveyForm() {
     <AnimatePresence mode='wait'>
       <motion.div
         key='step1'
-        className='min-h-screen p-4 max-w-3xl mx-auto'
+        className='min-h-screen p-4 max-w-3xl mx-auto relative'
         variants={containerVariants}
         initial='hidden'
         animate='visible'
         exit='exit'
       >
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast.show && (
+            <motion.div
+              className='fixed top-4 transform -translate-x-1/2 w-11/12 max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg z-50'
+              variants={toastVariants}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+            >
+              <p className='text-sm text-center'>{toast.message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Location Header */}
         <motion.div
           className='flex items-center gap-2 mb-6'

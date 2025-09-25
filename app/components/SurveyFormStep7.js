@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { getAuthHeaders } from "../utils/auth";
@@ -33,27 +33,60 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     সন্ত্রাস: 0,
     লুটপাট: 0,
   });
-  console.log("🚀 ~ SurveyFormStep7 ~ badQualities:", badQualities);
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
     (state) => state.surveyCreate
   );
 
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      setToast({
+        show: true,
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+      });
       return;
     }
 
     if (!selectedCandidate || !selectedRelation.trim()) {
-      alert("অনুগ্রহ করে সব তথ্য পূরণ করুন।");
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে সব তথ্য পূরণ করুন।",
+      });
       return;
     }
 
     if (hasBadQualities === null) {
-      alert("অনুগ্রহ করে হ্যাঁ বা না নির্বাচন করুন।");
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে হ্যাঁ বা না নির্বাচন করুন।",
+      });
+      return;
+    }
+
+    // Check if at least one qualification is selected
+    const selectedQualifications = Object.values(qualifications).filter(
+      (value) => value === 1
+    );
+    if (selectedQualifications.length === 0) {
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে অন্তত একটি যোগ্যতা নির্বাচন করুন।",
+      });
       return;
     }
 
@@ -102,7 +135,10 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       onNext();
     } catch (error) {
       console.error("Error in step 7:", error);
-      setError("ধাপ ৭ এ সমস্যা হয়েছে।");
+      setToast({
+        show: true,
+        message: "ধাপ ৭ এ সমস্যা হয়েছে।",
+      });
       setLoading(false);
     }
   };
@@ -157,16 +193,51 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     },
   };
 
+  const toastVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
   return (
     <AnimatePresence mode='wait'>
       <motion.div
         key='step7'
-        className='min-h-screen p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto'
+        className='min-h-screen p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto relative'
         variants={containerVariants}
         initial='hidden'
         animate='visible'
         exit='exit'
       >
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast.show && (
+            <motion.div
+              className='fixed top-4 transform -translate-x-1/2 w-11/12 max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg z-50'
+              variants={toastVariants}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+            >
+              <p className='text-sm text-center'>{toast.message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Location Header */}
         <motion.div
           className='flex items-center gap-2 mb-4 sm:mb-6'

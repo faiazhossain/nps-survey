@@ -12,6 +12,9 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "" });
+
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, selectedSeatId } = useSelector(
     (state) => state.surveyCreate
@@ -71,6 +74,16 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
     fetchPartyDetails();
   }, [selectedSeatId]);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
 
   // Add new candidate to a party
   const addNewCandidate = (partyName, newCandidateName) => {
@@ -168,7 +181,28 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      setToast({
+        show: true,
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+      });
+      return;
+    }
+
+    // Check if there's at least one party with candidates
+    const partiesWithCandidates = partyData.filter((party) =>
+      party.candidates.some(
+        (candidate) =>
+          candidate.name &&
+          candidate.name.trim() !== "" &&
+          candidate.name !== "add_new"
+      )
+    );
+
+    if (partiesWithCandidates.length === 0) {
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে অন্তত একটি দলে প্রার্থী যোগ করুন।",
+      });
       return;
     }
 
@@ -225,7 +259,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       onNext();
     } catch (error) {
       console.error("Error updating survey:", error);
-      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
+      setToast({
+        show: true,
+        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+      });
     }
   };
 
@@ -308,6 +345,26 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     },
   };
 
+  const toastVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
   // Get all candidates for dropdown
   const allCandidates = partyData
     .flatMap((party) => party.candidates.map((candidate) => candidate.name))
@@ -317,12 +374,27 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     <AnimatePresence mode='wait'>
       <motion.div
         key='step5'
-        className='min-h-screen p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto'
+        className='min-h-screen p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto relative'
         variants={containerVariants}
         initial='hidden'
         animate='visible'
         exit='exit'
       >
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast.show && (
+            <motion.div
+              className='fixed top-4 transform -translate-x-1/2 w-11/12 max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg z-50'
+              variants={toastVariants}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+            >
+              <p className='text-sm text-center'>{toast.message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Location Header */}
         <motion.div
           className='flex items-center gap-2 mb-4 sm:mb-6'

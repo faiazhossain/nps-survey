@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -16,11 +16,24 @@ export default function SurveyFormStep8({ onPrevious }) {
     popularParty: "",
   });
 
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "" });
+
   const router = useRouter();
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
     (state) => state.surveyCreate
   );
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
 
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
@@ -47,12 +60,18 @@ export default function SurveyFormStep8({ onPrevious }) {
 
   const handleSubmit = async () => {
     if (!currentSurveyId) {
-      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      setToast({
+        show: true,
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+      });
       return;
     }
 
     if (formData.publicWorks.length === 0 || !formData.popularParty) {
-      alert("অনুগ্রহ করে সব তথ্য পূরণ করুন।");
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে সব তথ্য পূরণ করুন।",
+      });
       return;
     }
 
@@ -60,7 +79,10 @@ export default function SurveyFormStep8({ onPrevious }) {
       formData.publicWorks.includes("অন্যান্য (উল্লেখ করুন)") &&
       !formData.publicWorksOther
     ) {
-      alert("অনুগ্রহ করে অন্যান্য কাজের বিবরণ লিখুন।");
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে অন্যান্য কাজের বিবরণ লিখুন।",
+      });
       return;
     }
 
@@ -97,13 +119,16 @@ export default function SurveyFormStep8({ onPrevious }) {
       router.push("/survey/history");
     } catch (error) {
       console.error("Error submitting survey:", error);
-      setError("সার্ভে জমা দিতে সমস্যা হয়েছে।");
+      setToast({
+        show: true,
+        message: "সার্ভে জমা দিতে সমস্যা হয়েছে।",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Animation variants (unchanged)
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, x: 100 },
     visible: {
@@ -153,11 +178,31 @@ export default function SurveyFormStep8({ onPrevious }) {
     },
   };
 
+  const toastVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
   const checkboxOptions = [
     "মসজিদ-মাদ্রাসা বা মন্দির নির্মান",
-    "মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা",
-    "অসহায় মানুষকে আর্থিক সহযোগিতা",
-    "অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া",
+    "মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা",
+    "অসহায় মানুষকে আর্থিক সহযোগিতা",
+    "অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া",
     "শিক্ষা প্রতিষ্ঠান নির্মান",
     "অন্যান্য (উল্লেখ করুন)",
   ];
@@ -166,12 +211,27 @@ export default function SurveyFormStep8({ onPrevious }) {
     <AnimatePresence mode='wait'>
       <motion.div
         key='step8'
-        className='min-h-screen p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto'
+        className='min-h-screen p-2 sm:p-4 lg:p-6 max-w-4xl mx-auto relative'
         variants={containerVariants}
         initial='hidden'
         animate='visible'
         exit='exit'
       >
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast.show && (
+            <motion.div
+              className='fixed top-4 transform -translate-x-1/2 w-11/12 max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg z-50'
+              variants={toastVariants}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+            >
+              <p className='text-sm text-center'>{toast.message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Location Header */}
         <motion.div
           className='flex items-center gap-2 mb-4 sm:mb-6'

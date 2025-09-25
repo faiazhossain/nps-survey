@@ -40,6 +40,9 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     seats: false,
   });
 
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "" });
+
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
     (state) => state.surveyCreate
@@ -88,6 +91,16 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       setThanas([]);
     }
   }, [formData.districtId]);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
 
   // Fetch divisions from API
   const fetchDivisions = async () => {
@@ -240,7 +253,10 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      setToast({
+        show: true,
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+      });
       return;
     }
 
@@ -252,9 +268,11 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       !formData.constituency ||
       (!formData.union && !formData.ward)
     ) {
-      alert(
-        "অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র পূরণ করুন। ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন অথবা ওয়ার্ড এর মধ্যে অন্তত একটি পূরণ করতে হবে।"
-      );
+      setToast({
+        show: true,
+        message:
+          "অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র পূরণ করুন। ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন অথবা ওয়ার্ড এর মধ্যে অন্তত একটি পূরণ করতে হবে।",
+      });
       return;
     }
 
@@ -280,7 +298,10 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       onNext();
     } catch (error) {
       console.error("Error updating location details:", error);
-      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
+      setToast({
+        show: true,
+        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+      });
     }
   };
 
@@ -345,6 +366,26 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     },
   };
 
+  const toastVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
   // Loading spinner component
   const LoadingSpinner = () => (
     <div className='inline-block ml-2 animate-spin h-4 w-4 border-2 border-green-500 rounded-full border-t-transparent'></div>
@@ -354,12 +395,27 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     <AnimatePresence mode='wait'>
       <motion.div
         key='step2'
-        className='min-h-screen p-4 max-w-3xl mx-auto'
+        className='min-h-screen p-4 max-w-3xl mx-auto relative'
         variants={containerVariants}
         initial='hidden'
         animate='visible'
         exit='exit'
       >
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast.show && (
+            <motion.div
+              className='fixed top-4 transform -translate-x-1/2 w-11/12 max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg z-50'
+              variants={toastVariants}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+            >
+              <p className='text-sm text-center'>{toast.message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Location Header */}
         <motion.div
           className='flex items-center gap-2 mb-6'

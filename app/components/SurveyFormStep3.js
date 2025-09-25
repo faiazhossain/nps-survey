@@ -18,10 +18,23 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     "দ্রব্যমূল্য নিয়ন্ত্রন": 0,
   });
 
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "" });
+
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
     (state) => state.surveyCreate
   );
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "" });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
 
   // Handle checkbox change
   const handleCheckboxChange = (demand) => {
@@ -34,7 +47,22 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
+      setToast({
+        show: true,
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+      });
+      return;
+    }
+
+    // Check if at least one demand is selected
+    const selectedDemands = Object.values(demands).filter(
+      (value) => value === 1
+    );
+    if (selectedDemands.length === 0) {
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে অন্তত একটি চাওয়া নির্বাচন করুন।",
+      });
       return;
     }
 
@@ -73,7 +101,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       onNext();
     } catch (error) {
       console.error("Error updating survey:", error);
-      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
+      setToast({
+        show: true,
+        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+      });
     }
   };
 
@@ -136,16 +167,51 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     },
   };
 
+  const toastVariants = {
+    hidden: { opacity: 0, y: -50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -50,
+      transition: {
+        duration: 0.2,
+        ease: "easeIn",
+      },
+    },
+  };
+
   return (
     <AnimatePresence mode='wait'>
       <motion.div
         key='step3'
-        className='min-h-screen p-4 max-w-3xl mx-auto'
+        className='min-h-screen p-4 max-w-3xl mx-auto relative'
         variants={containerVariants}
         initial='hidden'
         animate='visible'
         exit='exit'
       >
+        {/* Toast Notification */}
+        <AnimatePresence>
+          {toast.show && (
+            <motion.div
+              className='fixed top-4 transform -translate-x-1/2 w-11/12 max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg z-50'
+              variants={toastVariants}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+            >
+              <p className='text-sm text-center'>{toast.message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Location Header */}
         <motion.div
           className='flex items-center gap-2 mb-6'
