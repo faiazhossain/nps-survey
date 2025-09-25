@@ -161,7 +161,7 @@ export default function SurveyHistory() {
           </h1>
           <button
             onClick={handleGoToDashboard}
-            className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 shadow-md hover:shadow-lg'
+            className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 shadow-md hover:shadow-lg'
           >
             ড্যাশবোর্ড
           </button>
@@ -242,7 +242,7 @@ export default function SurveyHistory() {
                     <div className='flex items-end justify-end'>
                       <button
                         onClick={() => showSurveyDetails(survey.survey_id)}
-                        className='text-green-600 hover:text-green-700 font-medium text-xs bg-green-50 px-3 py-1 rounded-full hover:bg-green-100 transition-colors'
+                        className='text-green-600 hover:text-green-700 font-medium text-xs bg-green-100 px-4 py-2 rounded-full hover:bg-green-200 transition-colors'
                       >
                         বিস্তারিত
                       </button>

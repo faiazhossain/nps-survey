@@ -1,20 +1,22 @@
-"use client";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { setAuthState, fetchUserProfile } from "../../store/authSlice";
+'use client';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { setAuthState, fetchUserProfile } from '../../store/authSlice';
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
 export default function Login() {
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
+    username: '',
+    password: '',
     remember: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -22,29 +24,33 @@ export default function Login() {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
-      const response = await fetch("https://npsbd.xyz/api/login", {
-        method: "POST",
+      const response = await fetch('https://npsbd.xyz/api/login', {
+        method: 'POST',
         headers: {
-          accept: "application/json",
-          "Content-Type": "application/x-www-form-urlencoded",
+          accept: 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          grant_type: "password",
+          grant_type: 'password',
           username: formData.username,
           password: formData.password,
-          scope: "",
-          client_id: "string",
-          client_secret: "********",
+          scope: '',
+          client_id: 'string',
+          client_secret: '********',
         }),
       });
 
@@ -53,11 +59,11 @@ export default function Login() {
 
         // Store the token
         if (formData.remember) {
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("token_type", data.token_type);
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('token_type', data.token_type);
         } else {
-          sessionStorage.setItem("access_token", data.access_token);
-          sessionStorage.setItem("token_type", data.token_type);
+          sessionStorage.setItem('access_token', data.access_token);
+          sessionStorage.setItem('token_type', data.token_type);
         }
 
         // Update Redux state
@@ -67,13 +73,13 @@ export default function Login() {
         dispatch(fetchUserProfile());
 
         // Redirect to dashboard
-        router.push("/dashboard");
+        router.push('/dashboard');
       } else {
         const errorData = await response.json().catch(() => ({}));
-        setError(errorData.detail || "লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        setError(errorData.detail || 'লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
       }
     } catch (err) {
-      setError("নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।");
+      setError('নেটওয়ার্ক সমস্যা। আবার চেষ্টা করুন।');
     } finally {
       setIsLoading(false);
     }
@@ -164,16 +170,29 @@ export default function Login() {
               <label htmlFor='password' className='block text-sm font-medium'>
                 পাসওয়ার্ড
               </label>
-              <input
-                id='password'
-                name='password'
-                type='password'
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder='*******'
-                className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#006747]'
-                required
-              />
+              <div className='relative'>
+                <input
+                  id='password'
+                  name='password'
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder='*******'
+                  className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#006747]'
+                  required
+                />
+                <button
+                  type='button'
+                  onClick={togglePasswordVisibility}
+                  className='absolute inset-y-0 right-0 flex items-center pr-3'
+                >
+                  {showPassword ? (
+                    <AiOutlineEyeInvisible className='h-5 w-5 text-gray-400' />
+                  ) : (
+                    <AiOutlineEye className='h-5 w-5 text-gray-400' />
+                  )}
+                </button>
+              </div>
             </motion.div>
 
             <motion.div
@@ -206,7 +225,7 @@ export default function Login() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
           >
-            {isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}
+            {isLoading ? 'লগইন হচ্ছে...' : 'লগইন করুন'}
           </motion.button>
         </motion.form>
       </motion.div>

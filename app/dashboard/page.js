@@ -1,15 +1,16 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import ProtectedRoute from "../components/ProtectedRoute";
-import { logout } from "../utils/auth";
-import { useRouter } from "next/navigation";
-import { fetchUserProfile, clearAuth } from "../store/authSlice";
-import { fetchSurveyStats } from "../store/surveySlice";
-import { createSurvey, resetCreateState } from "../store/surveyCreateSlice";
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { logout } from '../utils/auth';
+import { useRouter } from 'next/navigation';
+import { fetchUserProfile, clearAuth } from '../store/authSlice';
+import { fetchSurveyStats } from '../store/surveySlice';
+import { createSurvey, resetCreateState } from '../store/surveyCreateSlice';
+import { CgLogOut } from 'react-icons/cg';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -31,9 +32,24 @@ export default function Dashboard() {
     currentSurveyId,
   } = useSelector((state) => state.surveyCreate);
 
+  // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
+  };
+
+  // Modal animation variants
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.8 },
+  };
+
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 0.5 },
   };
 
   useEffect(() => {
@@ -56,7 +72,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     logout();
     dispatch(clearAuth());
-    router.push("/auth/login");
+    router.push('/auth/login');
   };
 
   const handleStartNewSurvey = async () => {
@@ -74,38 +90,38 @@ export default function Dashboard() {
         dispatch(fetchSurveyStats()); // Refresh stats after navigation
       } else {
         // If API fails, still allow navigation to survey form
-        console.error("Survey creation failed, navigating anyway");
-        router.push("/survey/new");
+        console.error('Survey creation failed, navigating anyway');
+        router.push('/survey/new');
       }
     } catch (error) {
-      console.error("Error creating survey:", error);
+      console.error('Error creating survey:', error);
       // Fallback: navigate to survey form even if API fails
-      router.push("/survey/new");
+      router.push('/survey/new');
     }
   };
 
   // Format date for display
   const formatDate = (dateString) => {
-    if (!dateString) return "";
+    if (!dateString) return '';
     const date = new Date(dateString);
     const options = {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "Asia/Dhaka",
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'Asia/Dhaka',
     };
-    return date.toLocaleDateString("bn-BD", options);
+    return date.toLocaleDateString('bn-BD', options);
   };
 
   // Get user type in Bengali
   const getUserTypeBangla = (userType) => {
     switch (userType) {
-      case "surveyer":
-        return "সার্ভেয়ার";
-      case "admin":
-        return "অ্যাডমিন";
-      case "superadmin":
-        return "সুপার অ্যাডমিন";
+      case 'surveyer':
+        return 'সার্ভেয়ার';
+      case 'admin':
+        return 'অ্যাডমিন';
+      case 'superadmin':
+        return 'সুপার অ্যাডমিন';
       default:
         return userType;
     }
@@ -113,7 +129,7 @@ export default function Dashboard() {
 
   // Convert numbers to Bengali numerals
   const toBengaliNumerals = (num) => {
-    const bengaliDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num.toString().replace(/\d/g, (digit) => bengaliDigits[digit]);
   };
 
@@ -133,12 +149,67 @@ export default function Dashboard() {
             height={24}
           />
           <button
-            onClick={handleLogout}
+            onClick={() => setIsModalOpen(true)}
             className='px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded'
           >
-            লগআউট
+            <CgLogOut className='text-2xl'></CgLogOut>
           </button>
         </motion.div>
+
+        {/* Logout Confirmation Modal */}
+        <AnimatePresence>
+          {isModalOpen && (
+            <>
+              <motion.div
+                className='fixed inset-0 bg-black z-40'
+                variants={backdropVariants}
+                initial='hidden'
+                animate='visible'
+                exit='hidden'
+                transition={{ duration: 0.3 }}
+                onClick={() => setIsModalOpen(false)}
+              />
+              <motion.div
+                className='fixed inset-0 flex items-center justify-center z-50 px-4'
+                variants={modalVariants}
+                initial='hidden'
+                animate='visible'
+                exit='exit'
+                transition={{ duration: 0.3 }}
+              >
+                <div className='bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-6'>
+                  <h2 className='text-xl font-semibold text-gray-800 text-center'>
+                    লগআউট নিশ্চিত করুন
+                  </h2>
+                  <p className='text-sm text-gray-600 text-center'>
+                    আপনি কি সত্যিই লগআউট করতে চান?
+                  </p>
+                  <div className='flex justify-between gap-4'>
+                    <motion.button
+                      onClick={() => setIsModalOpen(false)}
+                      className='flex-1 py-2 px-4 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors'
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      না
+                    </motion.button>
+                    <motion.button
+                      onClick={() => {
+                        handleLogout();
+                        setIsModalOpen(false);
+                      }}
+                      className='flex-1 py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors'
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      লগআউট
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <motion.div
           className='flex items-center space-x-4 p-4 bg-white rounded-lg shadow'
@@ -306,7 +377,7 @@ export default function Dashboard() {
             whileHover={{ scale: createLoading ? 1 : 1.02 }}
             whileTap={{ scale: createLoading ? 1 : 0.98 }}
           >
-            {createLoading ? "সার্ভে তৈরি হচ্ছে..." : "নতুন সার্ভে শুরু করুন"}
+            {createLoading ? 'সার্ভে তৈরি হচ্ছে...' : 'নতুন সার্ভে শুরু করুন'}
           </motion.button>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link
