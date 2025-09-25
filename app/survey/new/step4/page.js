@@ -1,8 +1,8 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import SurveyFormStep4 from "@/app/components/SurveyFormStep4";
-import ProtectedRoute from "@/app/components/ProtectedRoute";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import SurveyFormStep4 from '@/app/components/SurveyFormStep4';
+import ProtectedRoute from '@/app/components/ProtectedRoute';
 
 export default function NewSurveyStep4() {
   const router = useRouter();
@@ -13,13 +13,17 @@ export default function NewSurveyStep4() {
     if (currentSurveyId) {
       router.push(`/survey/new/step5?id=${currentSurveyId}`);
     } else {
-      router.push("/survey/new/step5");
+      router.push('/survey/new/step5');
     }
   };
 
   // Handle navigation to previous step
   const handlePrevious = () => {
-    router.push("/survey/new/step3");
+    if (currentSurveyId) {
+      router.push(`/survey/new/step3?id=${currentSurveyId}`);
+    } else {
+      router.push('/survey/new/step3');
+    }
   };
 
   return (

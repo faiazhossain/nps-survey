@@ -1,9 +1,9 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import SurveyForm from "@/app/components/SurveyForm";
-import ProtectedRoute from "@/app/components/ProtectedRoute";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import SurveyForm from '@/app/components/SurveyForm';
+import ProtectedRoute from '@/app/components/ProtectedRoute';
 
 export default function NewSurveyStep1() {
   const router = useRouter();
@@ -14,13 +14,18 @@ export default function NewSurveyStep1() {
     if (currentSurveyId) {
       router.push(`/survey/new/step2?id=${currentSurveyId}`);
     } else {
-      router.push("/survey/new/step2");
+      router.push('/survey/new/step2');
     }
+  };
+
+  // Handle navigation back to dashboard
+  const handlePrevious = () => {
+    router.push('/dashboard');
   };
 
   return (
     <ProtectedRoute>
-      <SurveyForm onNext={handleNext} />
+      <SurveyForm onNext={handleNext} onPrevious={handlePrevious} />
     </ProtectedRoute>
   );
 }
