@@ -13,25 +13,27 @@ export default function SurveyHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedSurvey, setSelectedSurvey] = useState(null);
-  console.log('🚀 ~ SurveyHistory ~ selectedSurvey:', selectedSurvey);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(true); // Track if there's a next page
+  const pageSize = 10;
   const router = useRouter();
   const dispatch = useDispatch();
 
   // Handle navigation to dashboard with state reset
   const handleGoToDashboard = () => {
-    // Reset survey create state to avoid auto-redirect back to survey
     dispatch(resetCreateState());
     router.push('/dashboard');
   };
 
-  // Fetch all surveys
+  // Fetch surveys for the current page
   useEffect(() => {
     const fetchSurveys = async () => {
+      setLoading(true);
       try {
         const response = await fetch(
-          'https://npsbd.xyz/api/surveys/?page=1&page_size=100',
+          `https://npsbd.xyz/api/surveys/?page=${currentPage}&page_size=${pageSize}`,
           {
             headers: {
               accept: 'application/json',
@@ -45,7 +47,9 @@ export default function SurveyHistory() {
         }
 
         const data = await response.json();
-        setSurveys(data);
+        setSurveys(data.results || data); // Adjust based on API response structure
+        // Check if there's a next page (based on response or data length)
+        setHasNextPage(data.length === pageSize); // If fewer than pageSize, assume no next page
       } catch (error) {
         console.error('Error fetching surveys:', error);
         setError('সার্ভে তথ্য লোড করতে সমস্যা হয়েছে');
@@ -55,7 +59,14 @@ export default function SurveyHistory() {
     };
 
     fetchSurveys();
-  }, []);
+  }, [currentPage]);
+
+  // Function to handle next page
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
 
   // Function to show survey details by filtering existing data
   const showSurveyDetails = (survey_id) => {
@@ -169,76 +180,95 @@ export default function SurveyHistory() {
             </div>
           </div>
         ) : (
-          <motion.div
-            className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-            variants={containerVariants}
-            initial='hidden'
-            animate='visible'
-          >
-            {surveys.map((survey) => (
-              <motion.div
-                key={survey.survey_id}
-                className='bg-white border border-gray-200 rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-300'
-                variants={itemVariants}
-                whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
-              >
-                <div className='grid grid-cols-2 gap-3 text-sm'>
-                  {/* Survey Basic Info */}
-                  <div className='space-y-1'>
-                    <div className='text-gray-500 text-xs'>সার্ভে আইডি</div>
-                    <div className='font-semibold text-gray-800'>
-                      #{toBengaliNumber(survey.survey_id)}
+          <>
+            <motion.div
+              className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+              variants={containerVariants}
+              initial='hidden'
+              animate='visible'
+            >
+              {surveys.map((survey) => (
+                <motion.div
+                  key={survey.survey_id}
+                  className='bg-white border border-gray-200 rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow duration-300'
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                >
+                  <div className='grid grid-cols-2 gap-3 text-sm'>
+                    {/* Survey Basic Info */}
+                    <div className='space-y-1'>
+                      <div className='text-gray-500 text-xs'>সার্ভে আইডি</div>
+                      <div className='font-semibold text-gray-800'>
+                        #{toBengaliNumber(survey.survey_id)}
+                      </div>
+                      <div className='text-xs text-gray-400'>
+                        {formatDateToBengali(survey.created_at)}
+                      </div>
                     </div>
-                    <div className='text-xs text-gray-400'>
-                      {formatDateToBengali(survey.created_at)}
-                    </div>
-                  </div>
 
-                  {/* Location Info */}
-                  <div className='space-y-1'>
-                    <div className='text-gray-500 text-xs'>এরিয়া</div>
-                    <div className='font-medium text-gray-800'>
-                      {survey.location_details?.ইউনিয়ন || 'পাওয়া যায়নি '}
+                    {/* Location Info */}
+                    <div className='space-y-1'>
+                      <div className='text-gray-500 text-xs'>এরিয়া</div>
+                      <div className='font-medium text-gray-800'>
+                        {survey.location_details?.ইউনিয়ন || 'পাওয়া যায়নি '}
+                      </div>
+                      <div className='text-gray-500 text-xs'>আসন</div>
+                      <div className='font-medium text-gray-800'>
+                        {survey.location_details?.আসন || 'পাওয়া যায়নি '}
+                      </div>
                     </div>
-                    <div className='text-gray-500 text-xs'>আসন</div>
-                    <div className='font-medium text-gray-800'>
-                      {survey.location_details?.আসন || 'পাওয়া যায়নি '}
-                    </div>
-                  </div>
 
-                  {/* Status and Person Info */}
-                  <div className='space-y-1'>
-                    <div className='text-gray-500 text-xs'>নাম</div>
-                    <div className='font-medium text-gray-800'>
-                      {survey.person_details?.নাম || 'পাওয়া যায়নি '}
+                    {/* Status and Person Info */}
+                    <div className='space-y-1'>
+                      <div className='text-gray-500 text-xs'>নাম</div>
+                      <div className='font-medium text-gray-800'>
+                        {survey.person_details?.নাম || 'পাওয়া যায়নি '}
+                      </div>
+                      <div className='text-gray-500 text-xs'>স্ট্যাটাস</div>
+                      <div
+                        className={`font-medium ${
+                          survey.status === 'approved'
+                            ? 'text-green-600'
+                            : survey.status === 'rejected'
+                            ? 'text-red-600'
+                            : 'text-yellow-600'
+                        }`}
+                      >
+                        {getStatusInBengali(survey.status)}
+                      </div>
                     </div>
-                    <div className='text-gray-500 text-xs'>স্ট্যাটাস</div>
-                    <div
-                      className={`font-medium ${
-                        survey.status === 'approved'
-                          ? 'text-green-600'
-                          : survey.status === 'rejected'
-                          ? 'text-red-600'
-                          : 'text-yellow-600'
-                      }`}
-                    >
-                      {getStatusInBengali(survey.status)}
-                    </div>
-                  </div>
 
-                  {/* View Details Button */}
-                  <div className='flex items-end justify-end'>
-                    <button
-                      onClick={() => showSurveyDetails(survey.survey_id)}
-                      className='text-green-600 hover:text-green-700 font-medium text-xs bg-green-50 px-3 py-1 rounded-full hover:bg-green-100 transition-colors'
-                    >
-                      বিস্তারিত
-                    </button>
+                    {/* View Details Button */}
+                    <div className='flex items-end justify-end'>
+                      <button
+                        onClick={() => showSurveyDetails(survey.survey_id)}
+                        className='text-green-600 hover:text-green-700 font-medium text-xs bg-green-50 px-3 py-1 rounded-full hover:bg-green-100 transition-colors'
+                      >
+                        বিস্তারিত
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Pagination Controls */}
+            <div className='flex justify-center items-center mt-6'>
+              <div className='flex gap-4 items-center'>
+                <span className='text-gray-600 text-sm'>
+                  পৃষ্ঠা: {toBengaliNumber(currentPage)}
+                </span>
+                {hasNextPage && (
+                  <button
+                    onClick={handleNextPage}
+                    className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 shadow-md hover:shadow-lg'
+                  >
+                    পরবর্তী
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
         )}
 
         {/* Modal for Survey Details */}
