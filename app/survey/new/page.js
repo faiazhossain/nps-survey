@@ -1,14 +1,14 @@
-"use client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import ProtectedRoute from "../../components/ProtectedRoute";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import ProtectedRoute from '../../components/ProtectedRoute';
 
 export default function NewSurvey() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to the first step when this page loads
-    router.push("/survey/new/step1");
+    // Replace current history entry to avoid redirect loop when going back
+    router.replace('/survey/new/step1');
   }, [router]);
 
   return (

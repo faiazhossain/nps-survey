@@ -1,44 +1,54 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import ProtectedRoute from "../../components/ProtectedRoute";
-import { getAuthHeaders } from "../../utils/auth";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import ProtectedRoute from '../../components/ProtectedRoute';
+import { getAuthHeaders } from '../../utils/auth';
+import { resetCreateState } from '../../store/surveyCreateSlice';
 
 export default function SurveyHistory() {
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [selectedSurvey, setSelectedSurvey] = useState(null);
-  console.log("🚀 ~ SurveyHistory ~ selectedSurvey:", selectedSurvey);
+  console.log('🚀 ~ SurveyHistory ~ selectedSurvey:', selectedSurvey);
   const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState("");
+  const [detailsError, setDetailsError] = useState('');
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  // Handle navigation to dashboard with state reset
+  const handleGoToDashboard = () => {
+    // Reset survey create state to avoid auto-redirect back to survey
+    dispatch(resetCreateState());
+    router.push('/dashboard');
+  };
 
   // Fetch all surveys
   useEffect(() => {
     const fetchSurveys = async () => {
       try {
         const response = await fetch(
-          "https://npsbd.xyz/api/surveys/?page=1&page_size=100",
+          'https://npsbd.xyz/api/surveys/?page=1&page_size=100',
           {
             headers: {
-              accept: "application/json",
+              accept: 'application/json',
               ...getAuthHeaders(),
             },
           }
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch surveys");
+          throw new Error('Failed to fetch surveys');
         }
 
         const data = await response.json();
         setSurveys(data);
       } catch (error) {
-        console.error("Error fetching surveys:", error);
-        setError("সার্ভে তথ্য লোড করতে সমস্যা হয়েছে");
+        console.error('Error fetching surveys:', error);
+        setError('সার্ভে তথ্য লোড করতে সমস্যা হয়েছে');
       } finally {
         setLoading(false);
       }
@@ -58,12 +68,12 @@ export default function SurveyHistory() {
   // Function to convert status to Bengali
   const getStatusInBengali = (status) => {
     switch (status?.toLowerCase()) {
-      case "approved":
-        return "অনুমোদিত";
-      case "rejected":
-        return "বাতিল";
-      case "pending":
-        return "অপেক্ষামান";
+      case 'approved':
+        return 'অনুমোদিত';
+      case 'rejected':
+        return 'বাতিল';
+      case 'pending':
+        return 'অপেক্ষামান';
       default:
         return status;
     }
@@ -71,28 +81,28 @@ export default function SurveyHistory() {
 
   // Function to convert number to Bengali
   const toBengaliNumber = (num) => {
-    const bengaliNumbers = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num
       .toString()
-      .split("")
+      .split('')
       .map((digit) => bengaliNumbers[parseInt(digit)])
-      .join("");
+      .join('');
   };
 
   // Function to format date to Bengali
   const formatDateToBengali = (dateString) => {
-    if (!dateString) return "";
+    if (!dateString) return '';
     const date = new Date(dateString);
     const hours = date.getHours();
     const minutes = date.getMinutes();
     const day = date.getDate();
-    const month = date.toLocaleString("bn-BD", { month: "long" });
+    const month = date.toLocaleString('bn-BD', { month: 'long' });
     const year = date.getFullYear();
 
     const formattedTime = `${toBengaliNumber(
-      hours.toString().padStart(2, "0")
-    )}:${toBengaliNumber(minutes.toString().padStart(2, "0"))} ${
-      hours >= 12 ? "PM" : "AM"
+      hours.toString().padStart(2, '0')
+    )}:${toBengaliNumber(minutes.toString().padStart(2, '0'))} ${
+      hours >= 12 ? 'PM' : 'AM'
     }`;
     return `${formattedTime}, ${toBengaliNumber(
       day
@@ -116,7 +126,7 @@ export default function SurveyHistory() {
       y: 0,
       transition: {
         duration: 0.4,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -126,7 +136,7 @@ export default function SurveyHistory() {
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
+      transition: { duration: 0.3, ease: 'easeOut' },
     },
   };
 
@@ -139,7 +149,7 @@ export default function SurveyHistory() {
             সার্ভে হিস্ট্রি
           </h1>
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={handleGoToDashboard}
             className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 shadow-md hover:shadow-lg'
           >
             ড্যাশবোর্ড
@@ -188,11 +198,11 @@ export default function SurveyHistory() {
                   <div className='space-y-1'>
                     <div className='text-gray-500 text-xs'>এরিয়া</div>
                     <div className='font-medium text-gray-800'>
-                      {survey.location_details?.ইউনিয়ন || "পাওয়া যায়নি "}
+                      {survey.location_details?.ইউনিয়ন || 'পাওয়া যায়নি '}
                     </div>
                     <div className='text-gray-500 text-xs'>আসন</div>
                     <div className='font-medium text-gray-800'>
-                      {survey.location_details?.আসন || "পাওয়া যায়নি "}
+                      {survey.location_details?.আসন || 'পাওয়া যায়নি '}
                     </div>
                   </div>
 
@@ -200,16 +210,16 @@ export default function SurveyHistory() {
                   <div className='space-y-1'>
                     <div className='text-gray-500 text-xs'>নাম</div>
                     <div className='font-medium text-gray-800'>
-                      {survey.person_details?.নাম || "পাওয়া যায়নি "}
+                      {survey.person_details?.নাম || 'পাওয়া যায়নি '}
                     </div>
                     <div className='text-gray-500 text-xs'>স্ট্যাটাস</div>
                     <div
                       className={`font-medium ${
-                        survey.status === "approved"
-                          ? "text-green-600"
-                          : survey.status === "rejected"
-                          ? "text-red-600"
-                          : "text-yellow-600"
+                        survey.status === 'approved'
+                          ? 'text-green-600'
+                          : survey.status === 'rejected'
+                          ? 'text-red-600'
+                          : 'text-yellow-600'
                       }`}
                     >
                       {getStatusInBengali(survey.status)}
@@ -303,11 +313,11 @@ export default function SurveyHistory() {
                         </span>
                         <p
                           className={`text-base font-semibold ${
-                            selectedSurvey.status === "approved"
-                              ? "text-green-600"
-                              : selectedSurvey.status === "rejected"
-                              ? "text-red-600"
-                              : "text-yellow-600"
+                            selectedSurvey.status === 'approved'
+                              ? 'text-green-600'
+                              : selectedSurvey.status === 'rejected'
+                              ? 'text-red-600'
+                              : 'text-yellow-600'
                           }`}
                         >
                           {getStatusInBengali(selectedSurvey.status)}
@@ -337,7 +347,7 @@ export default function SurveyHistory() {
                           নাম
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
-                          {selectedSurvey.person_details?.নাম || "পাওয়া যায়নি "}
+                          {selectedSurvey.person_details?.নাম || 'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -346,7 +356,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.person_details?.জাতীয়_পরিচয়পত্র ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -358,7 +368,7 @@ export default function SurveyHistory() {
                             ? toBengaliNumber(
                                 selectedSurvey.person_details.মোবাইল
                               )
-                            : "পাওয়া যায়নি "}
+                            : 'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -367,7 +377,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.person_details?.ইমেইল ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -376,7 +386,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.person_details?.ধর্ম ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -385,7 +395,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.person_details?.পেশা ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -397,7 +407,7 @@ export default function SurveyHistory() {
                             ? toBengaliNumber(
                                 selectedSurvey.person_details.বয়স
                               )
-                            : "পাওয়া যায়নি "}
+                            : 'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -406,7 +416,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.person_details?.লিঙ্গ ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                     </div>
@@ -424,7 +434,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.location_details?.আসন ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -433,7 +443,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.location_details?.জেলা ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -442,7 +452,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.location_details?.থানা ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -451,7 +461,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.location_details?.বিভাগ ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -460,7 +470,7 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.location_details?.ইউনিয়ন ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -472,7 +482,7 @@ export default function SurveyHistory() {
                             ? toBengaliNumber(
                                 selectedSurvey.location_details.ওয়ার্ড
                               )
-                            : "পাওয়া যায়নি "}
+                            : 'পাওয়া যায়নি '}
                         </p>
                       </div>
                     </div>
@@ -491,7 +501,7 @@ export default function SurveyHistory() {
                       <ul className='list-disc list-inside text-base text-gray-800'>
                         {Object.entries(
                           selectedSurvey.demand_details?.[
-                            "বাংলাদেশের আগামীর নির্বাচিত সরকারের কাছে আপনার প্রধান চাওয়া কি কি?"
+                            'বাংলাদেশের আগামীর নির্বাচিত সরকারের কাছে আপনার প্রধান চাওয়া কি কি?'
                           ] || {}
                         ).map(
                           ([key, value]) =>
@@ -516,7 +526,7 @@ export default function SurveyHistory() {
                           মূল্যবান দল
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
-                          {selectedSurvey.worthful_party_name || "পাওয়া যায়নি "}
+                          {selectedSurvey.worthful_party_name || 'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -525,8 +535,8 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.candidate_work_details?.[
-                            "আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে জনপ্রিয়?"
-                          ] || "পাওয়া যায়নি "}
+                            'আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে জনপ্রিয়?'
+                          ] || 'পাওয়া যায়নি '}
                         </p>
                       </div>
                     </div>
@@ -572,7 +582,7 @@ export default function SurveyHistory() {
                           {selectedSurvey.candidate_details?.দল?.find(
                             (p) => p[selectedSurvey.worthful_party_name]
                           )?.[selectedSurvey.worthful_party_name] ||
-                            "পাওয়া যায়নি "}
+                            'পাওয়া যায়নি '}
                         </p>
                       </div>
                       <div>
@@ -581,8 +591,8 @@ export default function SurveyHistory() {
                         </span>
                         <p className='text-base font-semibold text-gray-800'>
                           {selectedSurvey.selected_candidate_details?.[
-                            "আপনি কিভাবে এই প্রার্থীকে চিনেন?"
-                          ] || "পাওয়া যায়নি "}
+                            'আপনি কিভাবে এই প্রার্থীকে চিনেন?'
+                          ] || 'পাওয়া যায়নি '}
                         </p>
                       </div>
                     </div>
@@ -593,7 +603,7 @@ export default function SurveyHistory() {
                       <ul className='list-disc list-inside text-base text-gray-800'>
                         {Object.entries(
                           selectedSurvey.selected_candidate_details?.[
-                            "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?"
+                            'এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?'
                           ] || {}
                         ).map(
                           ([key, value]) =>
@@ -611,8 +621,8 @@ export default function SurveyHistory() {
                       </span>
                       <p className='text-base font-semibold text-gray-800'>
                         {selectedSurvey.candidate_work_details?.[
-                          "সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?"
-                        ] || "পাওয়া যায়নি "}
+                          'সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?'
+                        ] || 'পাওয়া যায়নি '}
                       </p>
                     </div>
                   </div>
