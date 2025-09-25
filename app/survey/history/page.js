@@ -382,36 +382,6 @@ export default function SurveyHistory() {
                       </div>
                       <div>
                         <span className='text-gray-500 text-xs font-medium'>
-                          জাতীয় পরিচয়পত্র
-                        </span>
-                        <p className='text-base font-semibold text-gray-800'>
-                          {selectedSurvey.person_details?.জাতীয়_পরিচয়পত্র ||
-                            'পাওয়া যায়নি '}
-                        </p>
-                      </div>
-                      <div>
-                        <span className='text-gray-500 text-xs font-medium'>
-                          মোবাইল
-                        </span>
-                        <p className='text-base font-semibold text-gray-800'>
-                          {selectedSurvey.person_details?.মোবাইল
-                            ? toBengaliNumber(
-                                selectedSurvey.person_details.মোবাইল
-                              )
-                            : 'পাওয়া যায়নি '}
-                        </p>
-                      </div>
-                      <div>
-                        <span className='text-gray-500 text-xs font-medium'>
-                          ইমেইল
-                        </span>
-                        <p className='text-base font-semibold text-gray-800'>
-                          {selectedSurvey.person_details?.ইমেইল ||
-                            'পাওয়া যায়নি '}
-                        </p>
-                      </div>
-                      <div>
-                        <span className='text-gray-500 text-xs font-medium'>
                           ধর্ম
                         </span>
                         <p className='text-base font-semibold text-gray-800'>

@@ -414,7 +414,7 @@ export default function SurveyForm({ onPrevious, onNext }) {
                   বিপণন/বিক্রয় বিশেষজ্ঞ
                 </option>
                 <option value='খুচরা ব্যবসায়ী'>খুচরা ব্যবসায়ী</option>
-                <option value='অন্য'>অন্য</option>
+                <option value='অন্য'>অন্যান্য</option>
               </motion.select>
             </motion.div>
           </motion.div>

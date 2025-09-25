@@ -23,6 +23,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     constituencyId: null,
     union: '',
     unionId: null,
+    cityCorporation: '',
     ward: '',
   });
 
@@ -68,6 +69,8 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
         constituencyId: null,
         union: '',
         unionId: null,
+        cityCorporation: '',
+        ward: '',
       }));
       setDistricts([]);
       setThanas([]);
@@ -87,6 +90,8 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
         thanaId: null,
         union: '',
         unionId: null,
+        cityCorporation: '',
+        ward: '',
       }));
       setThanas([]);
     }
@@ -266,12 +271,13 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       !formData.district ||
       !formData.thana ||
       !formData.constituency ||
-      (!formData.union && !formData.ward)
+      !formData.ward ||
+      (!formData.union && !formData.cityCorporation)
     ) {
       setToast({
         show: true,
         message:
-          'অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র পূরণ করুন। ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন অথবা ওয়ার্ড এর মধ্যে অন্তত একটি পূরণ করতে হবে।',
+          'অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র (* চিহ্নিত) পূরণ করুন। ইউনিয়ন/পৌরসভা অথবা সিটি কর্পোরেশন এর মধ্যে অন্তত একটি পূরণ করতে হবে।',
       });
       return;
     }
@@ -282,6 +288,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       থানা: formData.thana,
       আসন: formData.constituency,
       ইউনিয়ন: formData.union,
+      সিটি_কর্পোরেশন: formData.cityCorporation,
       ওয়ার্ড: formData.ward,
     };
 
@@ -565,7 +572,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
 
             <motion.div variants={itemVariants}>
               <label htmlFor='union' className='block text-gray-700 mb-2'>
-                ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন
+                ইউনিয়ন/পৌরসভা
               </label>
               <motion.input
                 type='text'
@@ -583,8 +590,30 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
             </motion.div>
 
             <motion.div variants={itemVariants}>
+              <label
+                htmlFor='cityCorporation'
+                className='block text-gray-700 mb-2'
+              >
+                সিটি কর্পোরেশন
+              </label>
+              <motion.input
+                type='text'
+                id='cityCorporation'
+                name='cityCorporation'
+                value={formData.cityCorporation}
+                onChange={handleInputChange}
+                className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                whileFocus={{
+                  scale: 1.01,
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
+                }}
+                transition={{ duration: 0.2 }}
+              />
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
               <label htmlFor='ward' className='block text-gray-700 mb-2'>
-                ওয়ার্ড
+                ওয়ার্ড *
               </label>
               <motion.input
                 type='text'
@@ -598,6 +627,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                   boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
+                required
               />
             </motion.div>
           </motion.div>

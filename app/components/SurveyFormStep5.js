@@ -1,18 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAuthHeaders } from '../utils/auth';
-import { setPartyData } from '../store/surveyCreateSlice'; // Import setPartyData action
+import { setPartyData } from '../store/surveyCreateSlice';
 
 export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [partyData, setPartyDataState] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Toast state
   const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
@@ -20,12 +18,14 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     (state) => state.surveyCreate
   );
 
+  // Refs to manage focus for party name inputs (only for new party creation)
+  const partyNameRefs = useRef({});
+
   // Fetch party details from API
   useEffect(() => {
     const fetchPartyDetails = async () => {
       try {
         setLoading(true);
-        // Use the selectedSeatId from Redux instead of hardcoded value
         if (!selectedSeatId) {
           setError(
             'আসন আইডি পাওয়া যায়নি। আগের ধাপে গিয়ে আসন নির্বাচন করুন।'
@@ -50,16 +50,19 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
         const data = await response.json();
 
-        // Transform the data to a more manageable format
-        const transformedData = data.দল.map((party) => {
+        // Transform the data to include selection state
+        const transformedData = data.দল.map((party, partyIndex) => {
           const partyName = Object.keys(party)[0];
           const candidates = party[partyName];
           return {
+            id: `api_party_${partyIndex}`,
             name: partyName,
+            isFromApi: true, // Mark as API-sourced party
             candidates: candidates.map((candidate, index) => ({
               id: `${partyName}_${index}`,
               name: candidate,
-              isNew: false, // Mark API candidates as not new
+              isNew: false,
+              isSelected: false, // Add selection state
             })),
           };
         });
@@ -88,7 +91,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Add new candidate to a party
   const addNewCandidate = (partyName, newCandidateName) => {
-    // Validate candidate name
     if (!newCandidateName || newCandidateName.trim() === '') {
       setToast({
         show: true,
@@ -97,7 +99,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       return;
     }
 
-    // Check for duplicate candidates in the same party
     const currentParty = partyData.find((party) => party.name === partyName);
     if (
       currentParty &&
@@ -117,7 +118,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
         if (party.name === partyName) {
-          // Remove any "add_new" placeholder entries first
           const cleanedCandidates = party.candidates.filter(
             (candidate) => candidate.name !== 'add_new'
           );
@@ -131,6 +131,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                 id: newCandidateId,
                 name: newCandidateName.trim(),
                 isNew: true,
+                isSelected: true, // New candidates are selected by default
               },
             ],
           };
@@ -153,7 +154,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
           const newCandidates = party.candidates.filter(
             (_, index) => index !== candidateIndex
           );
-          // Reassign IDs to maintain consistency
           const updatedCandidates = newCandidates.map((candidate, index) => ({
             ...candidate,
             id: `${partyName}_${index}`,
@@ -168,23 +168,49 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     );
   };
 
+  // Toggle candidate selection
+  const toggleCandidateSelection = (partyName, candidateIndex) => {
+    setPartyDataState((prevData) =>
+      prevData.map((party) => {
+        if (party.name === partyName) {
+          const newCandidates = [...party.candidates];
+          newCandidates[candidateIndex] = {
+            ...newCandidates[candidateIndex],
+            isSelected: !newCandidates[candidateIndex].isSelected,
+          };
+          return { ...party, candidates: newCandidates };
+        }
+        return party;
+      })
+    );
+  };
+
   // Add new party
   const addNewParty = () => {
-    const newPartyName = `নতুন দল ${partyData.length + 1}`;
+    const newPartyName = `নতুন দল`;
+    const partyId = `party_${Date.now()}_${partyData.length}`;
     setPartyDataState((prevData) => [
       ...prevData,
       {
+        id: partyId,
         name: newPartyName,
+        isFromApi: false, // Mark as user-created party
         candidates: [],
       },
     ]);
+    // Set focus to the new party's input field
+    setTimeout(() => {
+      if (partyNameRefs.current[partyId]) {
+        partyNameRefs.current[partyId].focus();
+      }
+    }, 0);
   };
 
-  // Update party name
-  const updatePartyName = (oldName, newName) => {
+  // Update party name (only for non-API parties)
+  const updatePartyName = (partyId, newName) => {
     setPartyDataState((prevData) =>
       prevData.map((party) =>
-        party.name === oldName
+        party.id === partyId
           ? {
               ...party,
               name: newName,
@@ -228,6 +254,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
               {
                 id: newCandidateId,
                 name: 'add_new',
+                isSelected: false,
               },
             ],
           };
@@ -247,10 +274,11 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       return;
     }
 
-    // Check if there's at least one party with candidates
+    // Check if there's at least one selected candidate or new candidate
     const partiesWithCandidates = partyData.filter((party) =>
       party.candidates.some(
         (candidate) =>
+          (candidate.isSelected || candidate.isNew) &&
           candidate.name &&
           candidate.name.trim() !== '' &&
           candidate.name !== 'add_new'
@@ -260,24 +288,31 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     if (partiesWithCandidates.length === 0) {
       setToast({
         show: true,
-        message: 'অনুগ্রহ করে অন্তত একটি দলে প্রার্থী যোগ করুন।',
+        message:
+          'অনুগ্রহ করে অন্তত একটি প্রার্থী নির্বাচন করুন বা নতুন প্রার্থী যোগ করুন।',
       });
       return;
     }
 
-    // Store party data in Redux before API call
+    // Store party data in Redux
     dispatch(setPartyData(partyData));
 
-    // Prepare the candidate details data in the required format
+    // Prepare the candidate details data (only selected and new candidates)
     const availPartyDetailsData = {
       avail_party_details: {
         দল: partyData
-          .filter((party) => party.candidates.length > 0)
+          .filter((party) =>
+            party.candidates.some(
+              (candidate) => candidate.isSelected || candidate.isNew
+            )
+          )
           .map((party) => {
             const filteredCandidates = party.candidates
               .filter(
                 (candidate) =>
-                  candidate.name.trim() !== '' && candidate.name !== 'add_new'
+                  (candidate.isSelected || candidate.isNew) &&
+                  candidate.name.trim() !== '' &&
+                  candidate.name !== 'add_new'
               )
               .map((candidate) => candidate.name);
 
@@ -293,7 +328,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     };
 
     try {
-      // Send PATCH request to update survey with candidate details
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
@@ -314,7 +348,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       await response.json();
       console.log('Survey updated successfully with candidate details');
 
-      // Navigate to next step after successful API call
       onNext();
     } catch (error) {
       console.error('Error updating survey:', error);
@@ -449,12 +482,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
           )}
         </AnimatePresence>
 
-        {/* Location Header */}
-        <motion.div
-          className='flex items-center gap-2 mb-4 sm:mb-6'
-          variants={itemVariants}
-        ></motion.div>
-
         {/* Form Header */}
         <motion.div
           className='flex justify-between items-center mb-6 sm:mb-8'
@@ -516,7 +543,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             <div className='space-y-4 sm:space-y-6'>
               {partyData.map((party, partyIndex) => (
                 <motion.div
-                  key={party.name}
+                  key={party.id || party.name}
                   className='bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 shadow-sm'
                   variants={cardVariants}
                   initial='hidden'
@@ -525,14 +552,25 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                 >
                   {/* Party Name */}
                   <div className='flex justify-between items-center mb-3 sm:mb-4'>
-                    <input
-                      type='text'
-                      value={party.name}
-                      onChange={(e) =>
-                        updatePartyName(party.name, e.target.value)
-                      }
-                      className='text-base sm:text-lg font-semibold text-gray-800 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full'
-                    />
+                    {party.isFromApi ? (
+                      <p
+                        className='text-base sm:text-lg font-semibold text-gray-800 p-2 bg-gray-50 border border-gray-200 rounded-md w-full select-none'
+                        tabIndex='-1'
+                        onClick={(e) => e.preventDefault()}
+                      >
+                        {party.name}
+                      </p>
+                    ) : (
+                      <input
+                        type='text'
+                        value={party.name}
+                        onChange={(e) =>
+                          updatePartyName(party.id, e.target.value)
+                        }
+                        ref={(el) => (partyNameRefs.current[party.id] = el)}
+                        className='text-base sm:text-lg font-semibold text-gray-800 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full'
+                      />
+                    )}
                   </div>
 
                   {/* Candidates */}
@@ -568,7 +606,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                     addNewCandidate(party.name, e.target.value);
                                     e.target.value = '';
                                   } else if (e.key === 'Escape') {
-                                    // Remove the add_new entry on Escape
                                     setPartyDataState((prevData) =>
                                       prevData.map((p) =>
                                         p.name === party.name
@@ -587,7 +624,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                   if (e.target.value.trim() !== '') {
                                     addNewCandidate(party.name, e.target.value);
                                   } else {
-                                    // Remove the add_new entry if left empty
                                     setPartyDataState((prevData) =>
                                       prevData.map((p) =>
                                         p.name === party.name
@@ -623,7 +659,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                     addNewCandidate(party.name, e.target.value);
                                     e.target.value = '';
                                   } else if (e.key === 'Escape') {
-                                    // Remove the add_new entry on Escape
                                     setPartyDataState((prevData) =>
                                       prevData.map((p) =>
                                         p.name === party.name
@@ -642,7 +677,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                   if (e.target.value.trim() !== '') {
                                     addNewCandidate(party.name, e.target.value);
                                   } else {
-                                    // Remove the add_new entry if left empty
                                     setPartyDataState((prevData) =>
                                       prevData.map((p) =>
                                         p.name === party.name
@@ -675,6 +709,17 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                 )}
                               </label>
                               <div className='flex items-center gap-2'>
+                                <input
+                                  type='checkbox'
+                                  checked={candidate.isSelected}
+                                  onChange={() =>
+                                    toggleCandidateSelection(
+                                      party.name,
+                                      candidateIndex
+                                    )
+                                  }
+                                  className='h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'
+                                />
                                 {candidate.isNew ? (
                                   <input
                                     type='text'
@@ -724,6 +769,17 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                 {toBengaliNumber(candidateIndex + 1)} নং
                                 প্রার্থীর নাম
                               </label>
+                              <input
+                                type='checkbox'
+                                checked={candidate.isSelected}
+                                onChange={() =>
+                                  toggleCandidateSelection(
+                                    party.name,
+                                    candidateIndex
+                                  )
+                                }
+                                className='h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded'
+                              />
                               {candidate.isNew ? (
                                 <input
                                   type='text'

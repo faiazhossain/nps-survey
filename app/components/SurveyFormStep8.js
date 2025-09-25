@@ -329,48 +329,58 @@ export default function SurveyFormStep8({ onPrevious }) {
           </motion.div>
 
           <motion.div variants={itemVariants} className='mb-6'>
-            <label htmlFor='popularParty' className='block text-gray-700 mb-2'>
-              আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে
-              জনপ্রিয়?
-            </label>
-            <select
-              id='popularParty'
-              name='popularParty'
-              value={formData.popularParty}
-              onChange={handleInputChange}
-              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
-              required
-            >
-              <option value='' disabled>
+            <div className=' shadow-lg rounded-xl p-6 border border-gray-300'>
+              <h3 className='text-xl font-semibold text-gray-800 mb-4'>
+                আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে
+                জনপ্রিয়?
+              </h3>
+
+              <label
+                htmlFor='popularParty'
+                className='block text-gray-600 mb-2 text-sm font-medium'
+              >
                 একটি দল নির্বাচন করুন
-              </option>
-              {[
-                'বিএনপি',
-                'বাংলাদেশ জামায়াতে ইসলামী',
-                'এনসিপি',
-                'আওয়ামী লীগ',
-                'জাতীয় পার্টি',
-                'ওয়ার্কার্স পার্টি',
-                'গণ অধিকার পরিষদ',
-                'ইসলামী শাসনতন্ত্র আন্দোলন',
-                'এলডিপি',
-                'বাসদ',
-                'জাসদ',
-                'সিপিবি',
-                'কল্যাণ পার্টি',
-                'জাগপা',
-                'জেপি',
-                'বিজেপি',
-                'জেএসডি',
-                'জাতীয় দল',
-                'অন্যান্য',
-                'এখনোও বলতে পারছিনা',
-              ].map((party) => (
-                <option key={party} value={party}>
-                  {party}
+              </label>
+
+              <select
+                id='popularParty'
+                name='popularParty'
+                value={formData.popularParty}
+                onChange={handleInputChange}
+                className='w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-700'
+                required
+              >
+                <option value='' disabled>
+                  একটি দল নির্বাচন করুন
                 </option>
-              ))}
-            </select>
+                {[
+                  'বিএনপি',
+                  'বাংলাদেশ জামায়াতে ইসলামী',
+                  'এনসিপি',
+                  'আওামী লীগ',
+                  'জাতীয় পার্টি',
+                  'ওয়ার্কার্স পার্টি',
+                  'গণ অধিকার পরিষদ',
+                  'ইসলামী শাসনতন্ত্র আন্দোলন',
+                  'এলডিপি',
+                  'বাসদ',
+                  'জাসদ',
+                  'সিপিবি',
+                  'কল্যাণ পার্টি',
+                  'জাগপা',
+                  'জেপি',
+                  'বিজেপি',
+                  'জেএসডি',
+                  'জাতীয় দল',
+                  'অন্যান্য',
+                  'এখনোও বলতে পারছিনা',
+                ].map((party) => (
+                  <option key={party} value={party}>
+                    {party}
+                  </option>
+                ))}
+              </select>
+            </div>
           </motion.div>
         </motion.div>
 

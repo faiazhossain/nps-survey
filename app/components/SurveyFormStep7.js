@@ -33,6 +33,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     'ঘুষ গ্রহণ': 0,
     সন্ত্রাস: 0,
     লুটপাট: 0,
+    'নারী কেলেঙ্কারি': 0,
   });
 
   // Toast state
