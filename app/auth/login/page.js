@@ -1,6 +1,5 @@
 'use client';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -57,7 +56,6 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
 
-        // Store the token
         if (formData.remember) {
           localStorage.setItem('access_token', data.access_token);
           localStorage.setItem('token_type', data.token_type);
@@ -66,13 +64,8 @@ export default function Login() {
           sessionStorage.setItem('token_type', data.token_type);
         }
 
-        // Update Redux state
         dispatch(setAuthState(true));
-
-        // Fetch user profile after login
         dispatch(fetchUserProfile());
-
-        // Redirect to dashboard
         router.push('/dashboard');
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -87,18 +80,8 @@ export default function Login() {
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center p-4'>
-      <motion.div
-        className='w-full max-w-md space-y-8'
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.div
-          className='text-center'
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
+      <div className='w-full max-w-md space-y-8'>
+        <div className='text-center'>
           <Image
             src='/images/nps_logo.png'
             alt='NPS Logo'
@@ -106,47 +89,23 @@ export default function Login() {
             height={120}
             className='mx-auto'
           />
-          <motion.h1
-            className='mt-6 text-black text-2xl font-bold'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+          <h1 className='mt-6 text-black text-2xl font-bold'>
             আপনার একাউন্টে লগইন করুন
-          </motion.h1>
-          <motion.p
-            className='mt-2 text-[#636970]'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          </h1>
+          <p className='mt-2 text-[#636970]'>
             সার্ভে শুরু করতে আপনার একাউন্টে প্রবেশ করুন
-          </motion.p>
-        </motion.div>
+          </p>
+        </div>
 
-        <motion.form
-          className='mt-8 space-y-6'
-          onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-        >
+        <form className='mt-8 space-y-6' onSubmit={handleSubmit}>
           {error && (
-            <motion.div
-              className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
+            <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'>
               {error}
-            </motion.div>
+            </div>
           )}
 
           <div className='space-y-4 text-[#636970]'>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-            >
+            <div>
               <label htmlFor='username' className='block text-sm font-medium'>
                 ইমেইল
               </label>
@@ -160,13 +119,9 @@ export default function Login() {
                 className='mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#006747]'
                 required
               />
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.7 }}
-            >
+            <div>
               <label htmlFor='password' className='block text-sm font-medium'>
                 পাসওয়ার্ড
               </label>
@@ -193,14 +148,9 @@ export default function Login() {
                   )}
                 </button>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className='flex items-center'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
+            <div className='flex items-center'>
               <input
                 id='remember'
                 name='remember'
@@ -212,23 +162,18 @@ export default function Login() {
               <label htmlFor='remember' className='ml-2 block text-sm'>
                 লগইন মনে রাখুন
               </label>
-            </motion.div>
+            </div>
           </div>
 
-          <motion.button
+          <button
             type='submit'
             disabled={isLoading}
             className='w-full rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-2 mt-4 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
-            whileHover={{ scale: isLoading ? 1 : 1.02 }}
-            whileTap={{ scale: isLoading ? 1 : 0.98 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
           >
             {isLoading ? 'লগইন হচ্ছে...' : 'লগইন করুন'}
-          </motion.button>
-        </motion.form>
-      </motion.div>
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
