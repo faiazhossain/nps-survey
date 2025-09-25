@@ -11,7 +11,8 @@ export default function SurveyFormStep8({ onPrevious }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    publicWorks: "",
+    publicWorks: [], // Array to store multiple checkbox selections
+    publicWorksOther: "", // For the "Other" text input
     popularParty: "",
   });
 
@@ -20,6 +21,21 @@ export default function SurveyFormStep8({ onPrevious }) {
   const { currentSurveyId, isUpdating } = useSelector(
     (state) => state.surveyCreate
   );
+
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData((prev) => {
+      let updatedPublicWorks = [...prev.publicWorks];
+      if (checked) {
+        updatedPublicWorks = [...updatedPublicWorks, value];
+      } else {
+        updatedPublicWorks = updatedPublicWorks.filter(
+          (item) => item !== value
+        );
+      }
+      return { ...prev, publicWorks: updatedPublicWorks };
+    });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -35,8 +51,16 @@ export default function SurveyFormStep8({ onPrevious }) {
       return;
     }
 
-    if (!formData.publicWorks || !formData.popularParty) {
+    if (formData.publicWorks.length === 0 || !formData.popularParty) {
       alert("অনুগ্রহ করে সব তথ্য পূরণ করুন।");
+      return;
+    }
+
+    if (
+      formData.publicWorks.includes("অন্যান্য (উল্লেখ করুন)") &&
+      !formData.publicWorksOther
+    ) {
+      alert("অনুগ্রহ করে অন্যান্য কাজের বিবরণ লিখুন।");
       return;
     }
 
@@ -54,7 +78,8 @@ export default function SurveyFormStep8({ onPrevious }) {
           body: JSON.stringify({
             candidate_work_details: {
               "সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?":
-                formData.publicWorks,
+                formData.publicWorks.join(", "), // Join array into a string
+              "অন্যান্য কাজের বিবরণ": formData.publicWorksOther || "",
               "আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে জনপ্রিয়?":
                 formData.popularParty,
             },
@@ -69,7 +94,6 @@ export default function SurveyFormStep8({ onPrevious }) {
       await response.json();
       console.log("Survey completed successfully");
 
-      // Navigate to survey history page
       router.push("/survey/history");
     } catch (error) {
       console.error("Error submitting survey:", error);
@@ -79,7 +103,7 @@ export default function SurveyFormStep8({ onPrevious }) {
     }
   };
 
-  // Animation variants
+  // Animation variants (unchanged)
   const containerVariants = {
     hidden: { opacity: 0, x: 100 },
     visible: {
@@ -128,6 +152,15 @@ export default function SurveyFormStep8({ onPrevious }) {
       },
     },
   };
+
+  const checkboxOptions = [
+    "মসজিদ-মাদ্রাসা বা মন্দির নির্মান",
+    "মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা",
+    "অসহায় মানুষকে আর্থিক সহযোগিতা",
+    "অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া",
+    "শিক্ষা প্রতিষ্ঠান নির্মান",
+    "অন্যান্য (উল্লেখ করুন)",
+  ];
 
   return (
     <AnimatePresence mode='wait'>
@@ -204,38 +237,46 @@ export default function SurveyFormStep8({ onPrevious }) {
         {/* Form Fields */}
         <motion.div className='space-y-6' variants={itemVariants}>
           <motion.div variants={itemVariants} className='mb-6'>
-            <label htmlFor='publicWorks' className='block text-gray-700 mb-2'>
+            <h3 className='text-gray-700 mb-3 text-lg font-semibold'>
               সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?
-            </label>
-            <select
-              id='publicWorks'
-              name='publicWorks'
-              value={formData.publicWorks}
-              onChange={handleInputChange}
-              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
-              required
-            >
-              <option value='' disabled></option>
-              <option value='মসজিদ-মাদ্রাসা বা মন্দির নির্মান'>
-                মসজিদ-মাদ্রাসা বা মন্দির নির্মান
-              </option>
-              <option value='মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা'>
-                মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা
-              </option>
-              <option value='অসহায় মানুষকে আর্থিক সহযোগিতা'>
-                অসহায় মানুষকে আর্থিক সহযোগিতা
-              </option>
-              <option value='অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া'>
-                অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া
-              </option>
-              <option value='শিক্ষা প্রতিষ্ঠান নির্মান'>
-                শিক্ষা প্রতিষ্ঠান নির্মান
-              </option>
-              <option value='অন্যান্য (উল্লেখ করুন)'>
-                অন্যান্য (উল্লেখ করুন)
-              </option>
-            </select>
-            {formData.publicWorks === "অন্যান্য (উল্লেখ করুন)" && (
+              <span className='ml-2 text-sm text-gray-500'>
+                ({formData.publicWorks.length}/{checkboxOptions.length}{" "}
+                নির্বাচিত)
+              </span>
+            </h3>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+              {checkboxOptions.map((option) => (
+                <motion.div
+                  key={option}
+                  className={`flex items-center space-x-3 p-3 border rounded-md transition-colors duration-200 ${
+                    formData.publicWorks.includes(option)
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:bg-green-50"
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  role='checkbox'
+                  aria-checked={formData.publicWorks.includes(option)}
+                >
+                  <input
+                    type='checkbox'
+                    id={option}
+                    value={option}
+                    checked={formData.publicWorks.includes(option)}
+                    onChange={handleCheckboxChange}
+                    className='w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 focus:ring-offset-2'
+                    aria-label={`নির্বাচন করুন ${option}`}
+                  />
+                  <label
+                    htmlFor={option}
+                    className='flex-grow cursor-pointer text-sm sm:text-base text-gray-800'
+                  >
+                    {option}
+                  </label>
+                </motion.div>
+              ))}
+            </div>
+            {formData.publicWorks.includes("অন্যান্য (উল্লেখ করুন)") && (
               <textarea
                 id='publicWorksOther'
                 name='publicWorksOther'

@@ -33,6 +33,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     সন্ত্রাস: 0,
     লুটপাট: 0,
   });
+  console.log("🚀 ~ SurveyFormStep7 ~ badQualities:", badQualities);
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating } = useSelector(
@@ -46,10 +47,18 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       return;
     }
 
-    if (!selectedCandidate || !selectedRelation) {
+    if (!selectedCandidate || !selectedRelation.trim()) {
       alert("অনুগ্রহ করে সব তথ্য পূরণ করুন।");
       return;
     }
+
+    if (hasBadQualities === null) {
+      alert("অনুগ্রহ করে হ্যাঁ বা না নির্বাচন করুন।");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
 
     try {
       const response = await fetch(
@@ -63,6 +72,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
           },
           body: JSON.stringify({
             selected_candidate_details: {
+              "এদের মধ্যে কাকে বেশী যোগ্য বলে মনে হয়?": selectedCandidate,
               "আপনি কিভাবে এই প্রার্থীকে চিনেন?": selectedRelation,
               "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?": {
                 সততা: qualifications.সততা,
@@ -73,7 +83,9 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
                 সত্যবাদী: qualifications.সত্যবাদী,
                 দূরদর্শিতা: qualifications.দূরদর্শিতা,
                 দেশপ্রেম: qualifications.দেশপ্রেমিক,
+                উচ্চশিক্ষিত: qualifications.উচ্চশিক্ষিত,
               },
+              "এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?": badQualities,
             },
           }),
         }
@@ -86,10 +98,12 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       await response.json();
       console.log("Step 7 completed");
 
+      setLoading(false);
       onNext();
     } catch (error) {
       console.error("Error in step 7:", error);
       setError("ধাপ ৭ এ সমস্যা হয়েছে।");
+      setLoading(false);
     }
   };
 
@@ -244,19 +258,14 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
             <label htmlFor='relation' className='block text-gray-700 mb-2'>
               আপনি কিভাবে এই প্রার্থীকে চিনেন?
             </label>
-            <select
+            <textarea
               id='relation'
               value={selectedRelation}
               onChange={(e) => setSelectedRelation(e.target.value)}
-              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-20'
               required
-            >
-              <option value=''>নির্বাচন করুন</option>
-              <option value='পারিবারিক'>পারিবারিক</option>
-              <option value='রাজনৈতিক'>রাজনৈতিক</option>
-              <option value='ব্যক্তিগত'>ব্যক্তিগত</option>
-              <option value='সামাজিক'>সামাজিক</option>
-            </select>
+              placeholder='এই প্রার্থীকে চেনার বিবরণ লিখুন...'
+            />
           </motion.div>
 
           {/* Qualifications Checkboxes */}
@@ -374,13 +383,13 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
             <motion.button
               type='button'
               onClick={handleNext}
-              disabled={isUpdating}
+              disabled={loading || isUpdating}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
               variants={buttonVariants}
-              whileHover={isUpdating ? {} : "hover"}
-              whileTap={isUpdating ? {} : "tap"}
+              whileHover={loading || isUpdating ? {} : "hover"}
+              whileTap={loading || isUpdating ? {} : "tap"}
             >
-              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {loading || isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
             </motion.button>
           </motion.div>
         </motion.div>
