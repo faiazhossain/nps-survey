@@ -12,7 +12,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [error, setError] = useState("");
 
   const dispatch = useDispatch();
-  const { currentSurveyId, isUpdating } = useSelector(
+  const { currentSurveyId, isUpdating, selectedSeatId } = useSelector(
     (state) => state.surveyCreate
   );
 
@@ -21,8 +21,17 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     const fetchPartyDetails = async () => {
       try {
         setLoading(true);
+        // Use the selectedSeatId from Redux instead of hardcoded value
+        if (!selectedSeatId) {
+          setError(
+            "আসন আইডি পাওয়া যায়নি। আগের ধাপে গিয়ে আসন নির্বাচন করুন।"
+          );
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(
-          "https://npsbd.xyz/api/party/details/201",
+          `https://npsbd.xyz/api/party/details/${selectedSeatId}`,
           {
             headers: {
               accept: "application/json",
@@ -60,7 +69,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     };
 
     fetchPartyDetails();
-  }, []);
+  }, [selectedSeatId]);
 
   // Add new candidate to a party
   const addNewCandidate = (partyName, newCandidateName) => {

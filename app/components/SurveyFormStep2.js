@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import { updateSurveyWithLocationDetails } from "../store/surveyCreateSlice";
+import {
+  updateSurveyWithLocationDetails,
+  setSelectedSeatId,
+} from "../store/surveyCreateSlice";
 import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep2({ onPrevious, onNext }) {
@@ -214,6 +217,13 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       }));
     } else if (name === "constituency") {
       const selectedSeat = seats.find((seat) => seat.bn_name === value);
+      console.log("🚀 ~ handleInputChange ~ selectedSeat:", selectedSeat);
+
+      // Store the seat ID in Redux
+      if (selectedSeat && selectedSeat.id) {
+        dispatch(setSelectedSeatId(selectedSeat.id));
+      }
+
       setFormData((prev) => ({
         ...prev,
         constituency: value,

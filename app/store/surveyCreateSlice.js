@@ -107,6 +107,7 @@ const surveyCreateSlice = createSlice({
     currentSurveyId: null,
     isUpdating: false,
     updateSuccess: false,
+    selectedSeatId: null, // Add selectedSeatId to store
   },
   reducers: {
     clearCreateError: (state) => {
@@ -120,9 +121,14 @@ const surveyCreateSlice = createSlice({
       state.currentSurveyId = null;
       state.isUpdating = false;
       state.updateSuccess = false;
+      state.selectedSeatId = null; // Reset the selectedSeatId
     },
     setCurrentSurveyId: (state, action) => {
       state.currentSurveyId = action.payload;
+    },
+    setSelectedSeatId: (state, action) => {
+      // Add new action to set the selectedSeatId
+      state.selectedSeatId = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -179,6 +185,10 @@ const surveyCreateSlice = createSlice({
   },
 });
 
-export const { clearCreateError, resetCreateState, setCurrentSurveyId } =
-  surveyCreateSlice.actions;
+export const {
+  clearCreateError,
+  resetCreateState,
+  setCurrentSurveyId,
+  setSelectedSeatId, // Export the new action
+} = surveyCreateSlice.actions;
 export default surveyCreateSlice.reducer;
