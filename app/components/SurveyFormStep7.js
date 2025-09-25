@@ -11,6 +11,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
   const [error, setError] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState("");
   const [selectedRelation, setSelectedRelation] = useState("");
+  const [customRelation, setCustomRelation] = useState(""); // For "অন্যভাবে" option
   const [qualifications, setQualifications] = useState({
     সততা: 0,
     আদর্শবান: 0,
@@ -38,9 +39,25 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
   const [toast, setToast] = useState({ show: false, message: "" });
 
   const dispatch = useDispatch();
-  const { currentSurveyId, isUpdating } = useSelector(
+  const { currentSurveyId, isUpdating, selectedCandidates } = useSelector(
     (state) => state.surveyCreate
   );
+
+  // Get all selected candidates from Step 6 for the dropdown options
+  const candidateOptions = selectedCandidates
+    ? Object.values(selectedCandidates).filter(
+        (candidate) => candidate && candidate.trim() !== ""
+      )
+    : [];
+
+  // Relation options
+  const relationOptions = [
+    "ক. ব্যক্তিগতভাবে",
+    "খ. গণমাধ্যম",
+    "গ. সামাজিক গণমাধ্যম (ফেইসবুক / ইউটিউব)",
+    "ঘ. রাজনৈতিক মিছিল / অনুষ্ঠানে",
+    "ঙ. অন্যভাবে (উল্লেখ করুন)",
+  ];
 
   // Auto-hide toast after 3 seconds
   useEffect(() => {
@@ -66,6 +83,18 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       setToast({
         show: true,
         message: "অনুগ্রহ করে সব তথ্য পূরণ করুন।",
+      });
+      return;
+    }
+
+    // Check if "অন্যভাবে" is selected but custom text is not provided
+    if (
+      selectedRelation === "ঙ. অন্যভাবে (উল্লেখ করুন)" &&
+      !customRelation.trim()
+    ) {
+      setToast({
+        show: true,
+        message: "অনুগ্রহ করে বিস্তারিত লিখুন।",
       });
       return;
     }
@@ -106,7 +135,10 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
           body: JSON.stringify({
             selected_candidate_details: {
               "এদের মধ্যে কাকে বেশী যোগ্য বলে মনে হয়?": selectedCandidate,
-              "আপনি কিভাবে এই প্রার্থীকে চিনেন?": selectedRelation,
+              "আপনি কিভাবে এই প্রার্থীকে চিনেন?":
+                selectedRelation === "ঙ. অন্যভাবে (উল্লেখ করুন)"
+                  ? customRelation
+                  : selectedRelation,
               "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?": {
                 সততা: qualifications.সততা,
                 মানবিক: qualifications.মানবিক,
@@ -315,12 +347,11 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
               required
             >
               <option value=''>নির্বাচন করুন</option>
-              <option value='রহিম উদ্দিন'>রহিম উদ্দিন</option>
-              <option value='করিমুল হক'>করিমুল হক</option>
-              <option value='আব্দুল্লাহ আল মামুন'>আব্দুল্লাহ আল মামুন</option>
-              <option value='মাওলানা আব্দুর রশিদ'>মাওলানা আব্দুর রশিদ</option>
-              <option value='নাসির উদ্দিন'>নাসির উদ্দিন</option>
-              <option value='হাফেজ মোহাম্মদ আলী'>হাফেজ মোহাম্মদ আলী</option>
+              {candidateOptions.map((candidate, index) => (
+                <option key={index} value={candidate}>
+                  {candidate}
+                </option>
+              ))}
             </select>
           </motion.div>
 
@@ -329,14 +360,30 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
             <label htmlFor='relation' className='block text-gray-700 mb-2'>
               আপনি কিভাবে এই প্রার্থীকে চিনেন?
             </label>
-            <textarea
+            <select
               id='relation'
               value={selectedRelation}
               onChange={(e) => setSelectedRelation(e.target.value)}
-              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-20'
+              className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500'
               required
-              placeholder='এই প্রার্থীকে চেনার বিবরণ লিখুন...'
-            />
+            >
+              <option value=''>নির্বাচন করুন</option>
+              {relationOptions.map((relation, index) => (
+                <option key={index} value={relation}>
+                  {relation}
+                </option>
+              ))}
+            </select>
+            {selectedRelation === "ঙ. অন্যভাবে (উল্লেখ করুন)" && (
+              <textarea
+                id='customRelation'
+                value={customRelation}
+                onChange={(e) => setCustomRelation(e.target.value)}
+                className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 h-20 mt-3'
+                required
+                placeholder='এই প্রার্থীকে চেনার বিবরণ লিখুন...'
+              />
+            )}
           </motion.div>
 
           {/* Qualifications Checkboxes */}

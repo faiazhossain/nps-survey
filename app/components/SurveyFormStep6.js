@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { getAuthHeaders } from "../utils/auth";
+import { setSelectedCandidates } from "../store/surveyCreateSlice";
 
 export default function SurveyFormStep6({ onPrevious, onNext }) {
-  const [selectedCandidates, setSelectedCandidates] = useState({});
+  const [localSelectedCandidates, setLocalSelectedCandidates] = useState({});
   const [error, setError] = useState("");
 
   // Toast state
@@ -25,7 +26,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       partyData.forEach((party) => {
         initialSelections[party.name] = "";
       });
-      setSelectedCandidates(initialSelections);
+      setLocalSelectedCandidates(initialSelections);
     }
   }, [partyData]);
 
@@ -61,11 +62,15 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
 
   // Handle candidate selection
   const handleCandidateSelection = (partyName, candidateName) => {
-    setSelectedCandidates((prev) => ({
+    setLocalSelectedCandidates((prev) => ({
       ...prev,
       [partyName]: candidateName,
     }));
   };
+  console.log(
+    "🚀 ~ handleCandidateSelection ~ handleCandidateSelection:",
+    handleCandidateSelection
+  );
 
   // Handle next button click
   const handleNext = async () => {
@@ -77,14 +82,31 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       return;
     }
 
-    // Check if at least one candidate is selected
-    const selectedCandidatesList = Object.values(selectedCandidates).filter(
-      (candidate) => candidate && candidate.trim() !== ""
-    );
-    if (selectedCandidatesList.length === 0) {
+    // Debug logs
+    console.log("Selected Candidates:", localSelectedCandidates);
+    console.log("Transformed Party Data:", transformedPartyData);
+    console.log("Party Data Keys:", Object.keys(localSelectedCandidates));
+
+    // Check if every party has a selected candidate
+    // Use transformedPartyData to ensure we're checking the right parties
+    const allFieldsFilled = transformedPartyData.every((party) => {
+      const isSelected =
+        localSelectedCandidates[party.name] &&
+        localSelectedCandidates[party.name].trim() !== "";
+      console.log(
+        `Party ${party.name}: ${
+          isSelected ? "Selected" : "Not Selected"
+        } - Value: "${localSelectedCandidates[party.name]}"`
+      );
+      return isSelected;
+    });
+
+    console.log("All Fields Filled:", allFieldsFilled);
+
+    if (!allFieldsFilled) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে অন্তত একটি দল থেকে প্রার্থী নির্বাচন করুন।",
+        message: "অনুগ্রহ করে প্রতিটি দলের জন্য একটি প্রার্থী নির্বাচন করুন।",
       });
       return;
     }
@@ -92,7 +114,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     // Prepare candidate details data
     const candidateDetailsData = {
       candidate_details: {
-        দল: Object.entries(selectedCandidates)
+        দল: Object.entries(localSelectedCandidates)
           .filter(([partyName, candidateName]) => candidateName.trim() !== "")
           .map(([partyName, candidateName]) => ({
             [partyName]: candidateName,
@@ -121,6 +143,9 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
 
       await response.json();
       console.log("Survey updated successfully with selected candidates");
+
+      // Dispatch selected candidates to Redux store
+      dispatch(setSelectedCandidates(localSelectedCandidates));
 
       // Navigate to next step
       onNext();
@@ -359,7 +384,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                     {/* Mobile Layout - Dropdown */}
                     <div className='sm:hidden'>
                       <select
-                        value={selectedCandidates[party.name] || ""}
+                        value={localSelectedCandidates[party.name] || ""}
                         onChange={(e) =>
                           handleCandidateSelection(party.name, e.target.value)
                         }
@@ -387,7 +412,8 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                               name={`party_${party.name}`}
                               value={candidate}
                               checked={
-                                selectedCandidates[party.name] === candidate
+                                localSelectedCandidates[party.name] ===
+                                candidate
                               }
                               onChange={(e) =>
                                 handleCandidateSelection(
@@ -406,10 +432,10 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                     </div>
 
                     {/* Selected candidate display for mobile */}
-                    {selectedCandidates[party.name] && (
+                    {localSelectedCandidates[party.name] && (
                       <div className='sm:hidden mt-2 p-2 bg-green-50 border border-green-200 rounded-md'>
                         <span className='text-sm text-green-700'>
-                          নির্বাচিত: {selectedCandidates[party.name]}
+                          নির্বাচিত: {localSelectedCandidates[party.name]}
                         </span>
                       </div>
                     )}
