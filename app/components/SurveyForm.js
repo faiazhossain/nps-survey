@@ -224,23 +224,7 @@ export default function SurveyForm({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={24}
-              height={24}
-            />
-          </motion.div>
-          <div>
-            <p className='text-gray-600'>বর্তমান অবস্থান</p>
-            <p className='font-medium'>ব্রাহ্মনবাড়িয়া পুলিশ লাইনস</p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div

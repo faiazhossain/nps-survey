@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuthHeaders } from "../utils/auth";
-import { setSelectedCandidates } from "../store/surveyCreateSlice";
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
+import { setSelectedCandidates } from '../store/surveyCreateSlice';
 
 export default function SurveyFormStep6({ onPrevious, onNext }) {
   const [localSelectedCandidates, setLocalSelectedCandidates] = useState({});
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, partyData } = useSelector(
@@ -24,7 +24,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     if (partyData && partyData.length > 0) {
       const initialSelections = {};
       partyData.forEach((party) => {
-        initialSelections[party.name] = "";
+        initialSelections[party.name] = '';
       });
       setLocalSelectedCandidates(initialSelections);
     }
@@ -34,7 +34,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: "" });
+        setToast({ show: false, message: '' });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -52,8 +52,8 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
             .filter(
               (candidate) =>
                 candidate.name &&
-                candidate.name.trim() !== "" &&
-                candidate.name !== "add_new"
+                candidate.name.trim() !== '' &&
+                candidate.name !== 'add_new'
             )
             .map((candidate) => candidate.name),
         }))
@@ -68,7 +68,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     }));
   };
   console.log(
-    "🚀 ~ handleCandidateSelection ~ handleCandidateSelection:",
+    '🚀 ~ handleCandidateSelection ~ handleCandidateSelection:',
     handleCandidateSelection
   );
 
@@ -77,36 +77,36 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
       });
       return;
     }
 
     // Debug logs
-    console.log("Selected Candidates:", localSelectedCandidates);
-    console.log("Transformed Party Data:", transformedPartyData);
-    console.log("Party Data Keys:", Object.keys(localSelectedCandidates));
+    console.log('Selected Candidates:', localSelectedCandidates);
+    console.log('Transformed Party Data:', transformedPartyData);
+    console.log('Party Data Keys:', Object.keys(localSelectedCandidates));
 
     // Check if every party has a selected candidate
     // Use transformedPartyData to ensure we're checking the right parties
     const allFieldsFilled = transformedPartyData.every((party) => {
       const isSelected =
         localSelectedCandidates[party.name] &&
-        localSelectedCandidates[party.name].trim() !== "";
+        localSelectedCandidates[party.name].trim() !== '';
       console.log(
         `Party ${party.name}: ${
-          isSelected ? "Selected" : "Not Selected"
+          isSelected ? 'Selected' : 'Not Selected'
         } - Value: "${localSelectedCandidates[party.name]}"`
       );
       return isSelected;
     });
 
-    console.log("All Fields Filled:", allFieldsFilled);
+    console.log('All Fields Filled:', allFieldsFilled);
 
     if (!allFieldsFilled) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে প্রতিটি দলের জন্য একটি প্রার্থী নির্বাচন করুন।",
+        message: 'অনুগ্রহ করে প্রতিটি দলের জন্য একটি প্রার্থী নির্বাচন করুন।',
       });
       return;
     }
@@ -115,7 +115,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     const candidateDetailsData = {
       candidate_details: {
         দল: Object.entries(localSelectedCandidates)
-          .filter(([partyName, candidateName]) => candidateName.trim() !== "")
+          .filter(([partyName, candidateName]) => candidateName.trim() !== '')
           .map(([partyName, candidateName]) => ({
             [partyName]: candidateName,
           })),
@@ -127,10 +127,10 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify(candidateDetailsData),
@@ -142,7 +142,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log("Survey updated successfully with selected candidates");
+      console.log('Survey updated successfully with selected candidates');
 
       // Dispatch selected candidates to Redux store
       dispatch(setSelectedCandidates(localSelectedCandidates));
@@ -150,10 +150,10 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       // Navigate to next step
       onNext();
     } catch (error) {
-      console.error("Error updating survey:", error);
+      console.error('Error updating survey:', error);
       setToast({
         show: true,
-        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+        message: 'সার্ভে আপডেট করতে সমস্যা হয়েছে।',
       });
     }
   };
@@ -166,7 +166,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -175,7 +175,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -187,7 +187,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -197,7 +197,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -215,12 +215,12 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     hover: {
       scale: 1.02,
-      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
       transition: {
         duration: 0.2,
       },
@@ -234,7 +234,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -242,7 +242,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -276,28 +276,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-4 sm:mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={20}
-              height={20}
-              className='sm:w-6 sm:h-6'
-            />
-          </motion.div>
-          <div>
-            <p className='text-sm sm:text-base text-gray-600'>
-              বর্তমান অবস্থান
-            </p>
-            <p className='text-sm sm:text-base font-medium'>
-              ব্রাহ্মনবাড়িয়া পুলিশ লাইনস
-            </p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div
@@ -384,7 +363,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                     {/* Mobile Layout - Dropdown */}
                     <div className='sm:hidden'>
                       <select
-                        value={localSelectedCandidates[party.name] || ""}
+                        value={localSelectedCandidates[party.name] || ''}
                         onChange={(e) =>
                           handleCandidateSelection(party.name, e.target.value)
                         }
@@ -465,10 +444,10 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                 disabled={isUpdating}
                 className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
                 variants={buttonVariants}
-                whileHover={isUpdating ? {} : "hover"}
-                whileTap={isUpdating ? {} : "tap"}
+                whileHover={isUpdating ? {} : 'hover'}
+                whileTap={isUpdating ? {} : 'tap'}
               >
-                {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+                {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
               </motion.button>
             </motion.div>
           </motion.div>

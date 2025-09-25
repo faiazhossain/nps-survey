@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuthHeaders } from "../utils/auth";
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function SurveyFormStep3({ onPrevious, onNext }) {
-  const [selectedParty, setSelectedParty] = useState("");
+  const [selectedParty, setSelectedParty] = useState('');
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
@@ -21,7 +21,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: "" });
+        setToast({ show: false, message: '' });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -40,7 +40,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
       });
       return;
     }
@@ -48,7 +48,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     if (!selectedParty) {
       setToast({
         show: true,
-        message: "দয়া করে একটি রাজনৈতিক দল নির্বাচন করুন।",
+        message: 'দয়া করে একটি রাজনৈতিক দল নির্বাচন করুন।',
       });
       return;
     }
@@ -63,10 +63,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify(worthful_party_name),
@@ -78,15 +78,15 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log("Survey updated successfully with demands");
+      console.log('Survey updated successfully with demands');
 
       // Navigate to next step after successful API call
       onNext();
     } catch (error) {
-      console.error("Error updating survey:", error);
+      console.error('Error updating survey:', error);
       setToast({
         show: true,
-        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+        message: 'সার্ভে আপডেট করতে সমস্যা হয়েছে।',
       });
     }
   };
@@ -99,7 +99,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -108,7 +108,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -120,7 +120,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -130,7 +130,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -146,7 +146,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     unchecked: { scale: 1 },
     hover: {
       scale: 1.05,
-      boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+      boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
     },
   };
 
@@ -157,7 +157,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -165,32 +165,32 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
 
   // List of Bangladeshi political parties in Bengali
   const politicalParties = [
-    "বিএনপি",
-    "বাংলাদেশ জামায়াতে ইসলামী",
-    "এনসিপি",
-    "আওয়ামী লীগ",
-    "জাতীয় পার্টি",
-    "ওয়ার্কার্স পার্টি",
-    "গণ অধিকার পরিষদ",
-    "ইসলামী শাসনতন্ত্র আন্দোলন",
-    "এলডিপি",
-    "বাসদ",
-    "জাসদ",
-    "সিপিবি",
-    "কল্যাণ পার্টি",
-    "জাগপা",
-    "জেপি",
-    "বিজেপি",
-    "জেএসডি",
-    "জাতীয় দল",
-    "অন্যান্য",
+    'বিএনপি',
+    'বাংলাদেশ জামায়াতে ইসলামী',
+    'এনসিপি',
+    'আওয়ামী লীগ',
+    'জাতীয় পার্টি',
+    'ওয়ার্কার্স পার্টি',
+    'গণ অধিকার পরিষদ',
+    'ইসলামী শাসনতন্ত্র আন্দোলন',
+    'এলডিপি',
+    'বাসদ',
+    'জাসদ',
+    'সিপিবি',
+    'কল্যাণ পার্টি',
+    'জাগপা',
+    'জেপি',
+    'বিজেপি',
+    'জেএসডি',
+    'জাতীয় দল',
+    'অন্যান্য',
   ];
 
   return (
@@ -222,23 +222,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={24}
-              height={24}
-            />
-          </motion.div>
-          <div>
-            <p className='text-gray-600'>বর্তমান অবস্থান</p>
-            <p className='font-medium'>ব্রাহ্মনবাড়িয়া পুলিশ লাইনস</p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div
@@ -324,10 +308,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
               disabled={isUpdating || !selectedParty}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover={isUpdating || !selectedParty ? {} : "hover"}
-              whileTap={isUpdating || !selectedParty ? {} : "tap"}
+              whileHover={isUpdating || !selectedParty ? {} : 'hover'}
+              whileTap={isUpdating || !selectedParty ? {} : 'tap'}
             >
-              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
             </motion.button>
           </motion.div>
         </motion.form>

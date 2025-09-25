@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuthHeaders } from "../utils/auth";
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function SurveyFormStep7({ onPrevious, onNext }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState("");
-  const [selectedRelation, setSelectedRelation] = useState("");
-  const [customRelation, setCustomRelation] = useState(""); // For "অন্যভাবে" option
+  const [error, setError] = useState('');
+  const [selectedCandidate, setSelectedCandidate] = useState('');
+  const [selectedRelation, setSelectedRelation] = useState('');
+  const [customRelation, setCustomRelation] = useState(''); // For "অন্যভাবে" option
   const [qualifications, setQualifications] = useState({
     সততা: 0,
     আদর্শবান: 0,
@@ -29,14 +29,14 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     চাঁদাবাজি: 0,
     দখলদারিত্ব: 0,
     হয়রানি: 0,
-    "মাদক বাণিজ্য": 0,
-    "ঘুষ গ্রহণ": 0,
+    'মাদক বাণিজ্য': 0,
+    'ঘুষ গ্রহণ': 0,
     সন্ত্রাস: 0,
     লুটপাট: 0,
   });
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, selectedCandidates } = useSelector(
@@ -46,24 +46,24 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
   // Get all selected candidates from Step 6 for the dropdown options
   const candidateOptions = selectedCandidates
     ? Object.values(selectedCandidates).filter(
-        (candidate) => candidate && candidate.trim() !== ""
+        (candidate) => candidate && candidate.trim() !== ''
       )
     : [];
 
   // Relation options
   const relationOptions = [
-    "ক. ব্যক্তিগতভাবে",
-    "খ. গণমাধ্যম",
-    "গ. সামাজিক গণমাধ্যম (ফেইসবুক / ইউটিউব)",
-    "ঘ. রাজনৈতিক মিছিল / অনুষ্ঠানে",
-    "ঙ. অন্যভাবে (উল্লেখ করুন)",
+    'ক. ব্যক্তিগতভাবে',
+    'খ. গণমাধ্যম',
+    'গ. সামাজিক গণমাধ্যম (ফেইসবুক / ইউটিউব)',
+    'ঘ. রাজনৈতিক মিছিল / অনুষ্ঠানে',
+    'ঙ. অন্যভাবে (উল্লেখ করুন)',
   ];
 
   // Auto-hide toast after 3 seconds
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: "" });
+        setToast({ show: false, message: '' });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -74,7 +74,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
       });
       return;
     }
@@ -82,19 +82,19 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     if (!selectedCandidate || !selectedRelation.trim()) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে সব তথ্য পূরণ করুন।",
+        message: 'অনুগ্রহ করে সব তথ্য পূরণ করুন।',
       });
       return;
     }
 
     // Check if "অন্যভাবে" is selected but custom text is not provided
     if (
-      selectedRelation === "ঙ. অন্যভাবে (উল্লেখ করুন)" &&
+      selectedRelation === 'ঙ. অন্যভাবে (উল্লেখ করুন)' &&
       !customRelation.trim()
     ) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে বিস্তারিত লিখুন।",
+        message: 'অনুগ্রহ করে বিস্তারিত লিখুন।',
       });
       return;
     }
@@ -102,7 +102,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     if (hasBadQualities === null) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে হ্যাঁ বা না নির্বাচন করুন।",
+        message: 'অনুগ্রহ করে হ্যাঁ বা না নির্বাচন করুন।',
       });
       return;
     }
@@ -114,32 +114,32 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
     if (selectedQualifications.length === 0) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে অন্তত একটি যোগ্যতা নির্বাচন করুন।",
+        message: 'অনুগ্রহ করে অন্তত একটি যোগ্যতা নির্বাচন করুন।',
       });
       return;
     }
 
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify({
             selected_candidate_details: {
-              "এদের মধ্যে কাকে বেশী যোগ্য বলে মনে হয়?": selectedCandidate,
-              "আপনি কিভাবে এই প্রার্থীকে চিনেন?":
-                selectedRelation === "ঙ. অন্যভাবে (উল্লেখ করুন)"
+              'এদের মধ্যে কাকে বেশী যোগ্য বলে মনে হয়?': selectedCandidate,
+              'আপনি কিভাবে এই প্রার্থীকে চিনেন?':
+                selectedRelation === 'ঙ. অন্যভাবে (উল্লেখ করুন)'
                   ? customRelation
                   : selectedRelation,
-              "এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?": {
+              'এই প্রার্থীর যোগ্যতার মাপকাঠি কি কি?': {
                 সততা: qualifications.সততা,
                 মানবিক: qualifications.মানবিক,
                 রুচিশীল: qualifications.রুচিশীল,
@@ -150,7 +150,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
                 দেশপ্রেম: qualifications.দেশপ্রেমিক,
                 উচ্চশিক্ষিত: qualifications.উচ্চশিক্ষিত,
               },
-              "এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?": badQualities,
+              'এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?': badQualities,
             },
           }),
         }
@@ -161,15 +161,15 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log("Step 7 completed");
+      console.log('Step 7 completed');
 
       setLoading(false);
       onNext();
     } catch (error) {
-      console.error("Error in step 7:", error);
+      console.error('Error in step 7:', error);
       setToast({
         show: true,
-        message: "ধাপ ৭ এ সমস্যা হয়েছে।",
+        message: 'ধাপ ৭ এ সমস্যা হয়েছে।',
       });
       setLoading(false);
     }
@@ -183,7 +183,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -192,7 +192,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -204,7 +204,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -214,7 +214,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -232,7 +232,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -240,7 +240,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -274,28 +274,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-4 sm:mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={20}
-              height={20}
-              className='sm:w-6 sm:h-6'
-            />
-          </motion.div>
-          <div>
-            <p className='text-sm sm:text-base text-gray-600'>
-              বর্তমান অবস্থান
-            </p>
-            <p className='text-sm sm:text-base font-medium'>
-              ব্রাহ্মনবাড়িয়া পুলিশ লাইনস
-            </p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div
@@ -374,7 +353,7 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
                 </option>
               ))}
             </select>
-            {selectedRelation === "ঙ. অন্যভাবে (উল্লেখ করুন)" && (
+            {selectedRelation === 'ঙ. অন্যভাবে (উল্লেখ করুন)' && (
               <textarea
                 id='customRelation'
                 value={customRelation}
@@ -504,10 +483,10 @@ export default function SurveyFormStep7({ onPrevious, onNext }) {
               disabled={loading || isUpdating}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
               variants={buttonVariants}
-              whileHover={loading || isUpdating ? {} : "hover"}
-              whileTap={loading || isUpdating ? {} : "tap"}
+              whileHover={loading || isUpdating ? {} : 'hover'}
+              whileTap={loading || isUpdating ? {} : 'tap'}
             >
-              {loading || isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {loading || isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
             </motion.button>
           </motion.div>
         </motion.div>

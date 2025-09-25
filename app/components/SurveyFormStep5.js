@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuthHeaders } from "../utils/auth";
-import { setPartyData } from "../store/surveyCreateSlice"; // Import setPartyData action
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
+import { setPartyData } from '../store/surveyCreateSlice'; // Import setPartyData action
 
 export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [partyData, setPartyDataState] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, selectedSeatId } = useSelector(
@@ -28,7 +28,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
         // Use the selectedSeatId from Redux instead of hardcoded value
         if (!selectedSeatId) {
           setError(
-            "আসন আইডি পাওয়া যায়নি। আগের ধাপে গিয়ে আসন নির্বাচন করুন।"
+            'আসন আইডি পাওয়া যায়নি। আগের ধাপে গিয়ে আসন নির্বাচন করুন।'
           );
           setLoading(false);
           return;
@@ -38,7 +38,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
           `https://npsbd.xyz/api/party/details/${selectedSeatId}`,
           {
             headers: {
-              accept: "application/json",
+              accept: 'application/json',
               ...getAuthHeaders(),
             },
           }
@@ -59,14 +59,15 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             candidates: candidates.map((candidate, index) => ({
               id: `${partyName}_${index}`,
               name: candidate,
+              isNew: false, // Mark API candidates as not new
             })),
           };
         });
 
         setPartyDataState(transformedData);
       } catch (error) {
-        console.error("Error fetching party details:", error);
-        setError("পার্টি তথ্য লোড করতে সমস্যা হয়েছে।");
+        console.error('Error fetching party details:', error);
+        setError('পার্টি তথ্য লোড করতে সমস্যা হয়েছে।');
       } finally {
         setLoading(false);
       }
@@ -79,7 +80,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: "" });
+        setToast({ show: false, message: '' });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -87,24 +88,64 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Add new candidate to a party
   const addNewCandidate = (partyName, newCandidateName) => {
+    // Validate candidate name
+    if (!newCandidateName || newCandidateName.trim() === '') {
+      setToast({
+        show: true,
+        message: 'প্রার্থীর নাম খালি রাখা যাবে না।',
+      });
+      return;
+    }
+
+    // Check for duplicate candidates in the same party
+    const currentParty = partyData.find((party) => party.name === partyName);
+    if (
+      currentParty &&
+      currentParty.candidates.some(
+        (candidate) =>
+          candidate.name.toLowerCase().trim() ===
+          newCandidateName.toLowerCase().trim()
+      )
+    ) {
+      setToast({
+        show: true,
+        message: 'এই প্রার্থী ইতিমধ্যে এই দলে রয়েছেন।',
+      });
+      return;
+    }
+
     setPartyDataState((prevData) =>
       prevData.map((party) => {
         if (party.name === partyName) {
-          const newCandidateId = `${partyName}_${party.candidates.length}`;
+          // Remove any "add_new" placeholder entries first
+          const cleanedCandidates = party.candidates.filter(
+            (candidate) => candidate.name !== 'add_new'
+          );
+
+          const newCandidateId = `${partyName}_${cleanedCandidates.length}`;
           return {
             ...party,
             candidates: [
-              ...party.candidates,
-              { id: newCandidateId, name: newCandidateName },
+              ...cleanedCandidates,
+              {
+                id: newCandidateId,
+                name: newCandidateName.trim(),
+                isNew: true,
+              },
             ],
           };
         }
         return party;
       })
     );
+
+    setToast({
+      show: true,
+      message: `"${newCandidateName.trim()}" সফলভাবে ${partyName} দলে যোগ করা হয়েছে।`,
+    });
   };
 
-  // Delete candidate from a party
+  // Delete candidate from a party (only for new candidates)
   const deleteCandidate = (partyName, candidateIndex) => {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
@@ -149,7 +190,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
               name: newName,
               candidates: party.candidates.map((candidate) => ({
                 ...candidate,
-                id: `${newName}_${candidate.id.split("_")[1]}`,
+                id: `${newName}_${candidate.id.split('_')[1]}`,
               })),
             }
           : party
@@ -157,21 +198,39 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     );
   };
 
-  // Update candidate selection
-  const updateCandidateSelection = (
-    partyName,
-    candidateIndex,
-    selectedName
-  ) => {
+  // Update candidate name (for new candidates only)
+  const updateCandidateName = (partyName, candidateIndex, newName) => {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
         if (party.name === partyName) {
           const newCandidates = [...party.candidates];
           newCandidates[candidateIndex] = {
-            id: `${partyName}_${candidateIndex}`,
-            name: selectedName,
+            ...newCandidates[candidateIndex],
+            name: newName,
           };
           return { ...party, candidates: newCandidates };
+        }
+        return party;
+      })
+    );
+  };
+
+  // Start adding a new candidate (add placeholder)
+  const startAddingCandidate = (partyName) => {
+    setPartyDataState((prevData) =>
+      prevData.map((party) => {
+        if (party.name === partyName) {
+          const newCandidateId = `${partyName}_${party.candidates.length}`;
+          return {
+            ...party,
+            candidates: [
+              ...party.candidates,
+              {
+                id: newCandidateId,
+                name: 'add_new',
+              },
+            ],
+          };
         }
         return party;
       })
@@ -183,7 +242,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
       });
       return;
     }
@@ -193,15 +252,15 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       party.candidates.some(
         (candidate) =>
           candidate.name &&
-          candidate.name.trim() !== "" &&
-          candidate.name !== "add_new"
+          candidate.name.trim() !== '' &&
+          candidate.name !== 'add_new'
       )
     );
 
     if (partiesWithCandidates.length === 0) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে অন্তত একটি দলে প্রার্থী যোগ করুন।",
+        message: 'অনুগ্রহ করে অন্তত একটি দলে প্রার্থী যোগ করুন।',
       });
       return;
     }
@@ -218,7 +277,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             const filteredCandidates = party.candidates
               .filter(
                 (candidate) =>
-                  candidate.name.trim() !== "" && candidate.name !== "add_new"
+                  candidate.name.trim() !== '' && candidate.name !== 'add_new'
               )
               .map((candidate) => candidate.name);
 
@@ -238,10 +297,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify(availPartyDetailsData),
@@ -253,27 +312,27 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log("Survey updated successfully with candidate details");
+      console.log('Survey updated successfully with candidate details');
 
       // Navigate to next step after successful API call
       onNext();
     } catch (error) {
-      console.error("Error updating survey:", error);
+      console.error('Error updating survey:', error);
       setToast({
         show: true,
-        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+        message: 'সার্ভে আপডেট করতে সমস্যা হয়েছে।',
       });
     }
   };
 
   // Convert number to Bengali numeral
   const toBengaliNumber = (num) => {
-    const bengaliNumbers = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+    const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num
       .toString()
-      .split("")
+      .split('')
       .map((digit) => bengaliNumbers[parseInt(digit)])
-      .join("");
+      .join('');
   };
 
   // Animation variants
@@ -284,7 +343,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -293,7 +352,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -305,7 +364,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -315,7 +374,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -333,12 +392,12 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     hover: {
       scale: 1.02,
-      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
       transition: {
         duration: 0.2,
       },
@@ -352,7 +411,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -360,15 +419,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
-
-  // Get all candidates for dropdown
-  const allCandidates = partyData
-    .flatMap((party) => party.candidates.map((candidate) => candidate.name))
-    .filter((name) => name.trim() !== "");
 
   return (
     <AnimatePresence mode='wait'>
@@ -399,28 +453,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-4 sm:mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={20}
-              height={20}
-              className='sm:w-6 sm:h-6'
-            />
-          </motion.div>
-          <div>
-            <p className='text-sm sm:text-base text-gray-600'>
-              বর্তমান অবস্থান
-            </p>
-            <p className='text-sm sm:text-base font-medium'>
-              ব্রাহ্মনবাড়িয়া পুলিশ লাইনস
-            </p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div
@@ -507,128 +540,235 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                     {party.candidates.map((candidate, candidateIndex) => (
                       <motion.div
                         key={candidate.id}
-                        className='space-y-2 sm:space-y-0'
+                        className={`space-y-2 sm:space-y-0 ${
+                          candidate.isNew
+                            ? 'bg-green-50 border border-green-200 rounded-md p-2'
+                            : ''
+                        }`}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: candidateIndex * 0.1 }}
                       >
-                        {/* Mobile Layout */}
-                        <div className='sm:hidden'>
-                          <label className='block text-sm font-medium text-gray-700 mb-1'>
-                            {toBengaliNumber(candidateIndex + 1)} নং প্রার্থীর
-                            নাম
-                          </label>
-                          <div className='flex items-center gap-2'>
-                            <select
-                              value={candidate.name}
-                              onChange={(e) =>
-                                updateCandidateSelection(
-                                  party.name,
-                                  candidateIndex,
-                                  e.target.value
-                                )
-                              }
-                              className='flex-1 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
-                            >
-                              <option value=''>প্রার্থী নির্বাচন করুন</option>
-                              {allCandidates.map((candidateName, index) => (
-                                <option key={index} value={candidateName}>
-                                  {candidateName}
-                                </option>
-                              ))}
-                              <option value='add_new'>
-                                নতুন প্রার্থী যোগ করুন
-                              </option>
-                            </select>
-                            <motion.button
-                              onClick={() =>
-                                deleteCandidate(party.name, candidateIndex)
-                              }
-                              className='p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md border border-red-200 transition-colors'
-                              variants={buttonVariants}
-                              whileHover='hover'
-                              whileTap='tap'
-                              title='প্রার্থী মুছুন'
-                            >
-                              <Image
-                                src='/images/serveyLogo/remove.png'
-                                alt='Delete'
-                                width={16}
-                                height={16}
+                        {candidate.name === 'add_new' ? (
+                          <>
+                            {/* Mobile Layout for add_new */}
+                            <div className='sm:hidden'>
+                              <label className='flex items-center gap-2 text-sm font-medium text-gray-700 mb-1'>
+                                নতুন প্রার্থীর নাম
+                              </label>
+                              <input
+                                type='text'
+                                placeholder='নতুন প্রার্থীর নাম লিখুন এবং Enter চাপুন'
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (
+                                    e.key === 'Enter' &&
+                                    e.target.value.trim() !== ''
+                                  ) {
+                                    addNewCandidate(party.name, e.target.value);
+                                    e.target.value = '';
+                                  } else if (e.key === 'Escape') {
+                                    // Remove the add_new entry on Escape
+                                    setPartyDataState((prevData) =>
+                                      prevData.map((p) =>
+                                        p.name === party.name
+                                          ? {
+                                              ...p,
+                                              candidates: p.candidates.filter(
+                                                (c) => c.name !== 'add_new'
+                                              ),
+                                            }
+                                          : p
+                                      )
+                                    );
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  if (e.target.value.trim() !== '') {
+                                    addNewCandidate(party.name, e.target.value);
+                                  } else {
+                                    // Remove the add_new entry if left empty
+                                    setPartyDataState((prevData) =>
+                                      prevData.map((p) =>
+                                        p.name === party.name
+                                          ? {
+                                              ...p,
+                                              candidates: p.candidates.filter(
+                                                (c) => c.name !== 'add_new'
+                                              ),
+                                            }
+                                          : p
+                                      )
+                                    );
+                                  }
+                                }}
+                                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm'
                               />
-                            </motion.button>
-                          </div>
-                        </div>
+                            </div>
 
-                        {/* Desktop Layout */}
-                        <div className='hidden sm:flex items-center gap-3'>
-                          <label className='text-sm font-medium text-gray-700 min-w-[140px] lg:min-w-[120px]'>
-                            {toBengaliNumber(candidateIndex + 1)} নং প্রার্থীর
-                            নাম
-                          </label>
-                          <select
-                            value={candidate.name}
-                            onChange={(e) =>
-                              updateCandidateSelection(
-                                party.name,
-                                candidateIndex,
-                                e.target.value
-                              )
-                            }
-                            className='flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
-                          >
-                            <option value=''>প্রার্থী নির্বাচন করুন</option>
-                            {allCandidates.map((candidateName, index) => (
-                              <option key={index} value={candidateName}>
-                                {candidateName}
-                              </option>
-                            ))}
-                            <option value='add_new'>
-                              নতুন প্রার্থী যোগ করুন
-                            </option>
-                          </select>
-                          <motion.button
-                            onClick={() =>
-                              deleteCandidate(party.name, candidateIndex)
-                            }
-                            className='p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md border border-red-200 transition-colors'
-                            variants={buttonVariants}
-                            whileHover='hover'
-                            whileTap='tap'
-                            title='প্রার্থী মুছুন'
-                          >
-                            <Image
-                              src='/images/serveyLogo/remove.png'
-                              alt='Delete'
-                              width={16}
-                              height={16}
-                            />
-                          </motion.button>
-                        </div>
+                            {/* Desktop Layout for add_new */}
+                            <div className='hidden sm:flex items-center gap-3'>
+                              <label className='text-sm font-medium text-gray-700 min-w-[140px] lg:min-w-[120px]'>
+                                নতুন প্রার্থীর নাম
+                              </label>
+                              <input
+                                type='text'
+                                placeholder='নতুন প্রার্থীর নাম লিখুন এবং Enter চাপুন'
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (
+                                    e.key === 'Enter' &&
+                                    e.target.value.trim() !== ''
+                                  ) {
+                                    addNewCandidate(party.name, e.target.value);
+                                    e.target.value = '';
+                                  } else if (e.key === 'Escape') {
+                                    // Remove the add_new entry on Escape
+                                    setPartyDataState((prevData) =>
+                                      prevData.map((p) =>
+                                        p.name === party.name
+                                          ? {
+                                              ...p,
+                                              candidates: p.candidates.filter(
+                                                (c) => c.name !== 'add_new'
+                                              ),
+                                            }
+                                          : p
+                                      )
+                                    );
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  if (e.target.value.trim() !== '') {
+                                    addNewCandidate(party.name, e.target.value);
+                                  } else {
+                                    // Remove the add_new entry if left empty
+                                    setPartyDataState((prevData) =>
+                                      prevData.map((p) =>
+                                        p.name === party.name
+                                          ? {
+                                              ...p,
+                                              candidates: p.candidates.filter(
+                                                (c) => c.name !== 'add_new'
+                                              ),
+                                            }
+                                          : p
+                                      )
+                                    );
+                                  }
+                                }}
+                                className='flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Mobile Layout for existing candidates */}
+                            <div className='sm:hidden'>
+                              <label className='flex items-center gap-2 text-sm font-medium text-gray-700 mb-1'>
+                                {toBengaliNumber(candidateIndex + 1)} নং
+                                প্রার্থীর নাম
+                                {candidate.isNew && (
+                                  <span className='bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full'>
+                                    নতুন যোগ করা
+                                  </span>
+                                )}
+                              </label>
+                              <div className='flex items-center gap-2'>
+                                {candidate.isNew ? (
+                                  <input
+                                    type='text'
+                                    value={candidate.name}
+                                    onChange={(e) =>
+                                      updateCandidateName(
+                                        party.name,
+                                        candidateIndex,
+                                        e.target.value
+                                      )
+                                    }
+                                    className='flex-1 p-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                                  />
+                                ) : (
+                                  <p className='flex-1 p-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-800'>
+                                    {candidate.name}
+                                  </p>
+                                )}
+                                {candidate.isNew && (
+                                  <motion.button
+                                    onClick={() =>
+                                      deleteCandidate(
+                                        party.name,
+                                        candidateIndex
+                                      )
+                                    }
+                                    className='p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md border border-red-200 transition-colors'
+                                    variants={buttonVariants}
+                                    whileHover='hover'
+                                    whileTap='tap'
+                                    title='প্রার্থী মুছুন'
+                                  >
+                                    <Image
+                                      src='/images/serveyLogo/remove.png'
+                                      alt='Delete'
+                                      width={16}
+                                      height={16}
+                                    />
+                                  </motion.button>
+                                )}
+                              </div>
+                            </div>
 
-                        {candidate.name === "add_new" && (
-                          <input
-                            type='text'
-                            placeholder='নতুন প্রার্থীর নাম লিখুন'
-                            onBlur={(e) => {
-                              if (e.target.value.trim() !== "") {
-                                addNewCandidate(party.name, e.target.value);
-                              }
-                            }}
-                            className='w-full sm:ml-2 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base'
-                          />
+                            {/* Desktop Layout for existing candidates */}
+                            <div className='hidden sm:flex items-center gap-3'>
+                              <label className='text-sm font-medium text-gray-700 min-w-[140px] lg:min-w-[120px]'>
+                                {toBengaliNumber(candidateIndex + 1)} নং
+                                প্রার্থীর নাম
+                              </label>
+                              {candidate.isNew ? (
+                                <input
+                                  type='text'
+                                  value={candidate.name}
+                                  onChange={(e) =>
+                                    updateCandidateName(
+                                      party.name,
+                                      candidateIndex,
+                                      e.target.value
+                                    )
+                                  }
+                                  className='flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                                />
+                              ) : (
+                                <p className='flex-1 p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-800'>
+                                  {candidate.name}
+                                </p>
+                              )}
+                              {candidate.isNew && (
+                                <motion.button
+                                  onClick={() =>
+                                    deleteCandidate(party.name, candidateIndex)
+                                  }
+                                  className='p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md border border-red-200 transition-colors'
+                                  variants={buttonVariants}
+                                  whileHover='hover'
+                                  whileTap='tap'
+                                  title='প্রার্থী মুছুন'
+                                >
+                                  <Image
+                                    src='/images/serveyLogo/remove.png'
+                                    alt='Delete'
+                                    width={16}
+                                    height={16}
+                                  />
+                                </motion.button>
+                              )}
+                            </div>
+                          </>
                         )}
                       </motion.div>
                     ))}
                     {/* Add new candidate button */}
                     <motion.button
-                      onClick={() =>
-                        updateCandidateSelection(
-                          party.name,
-                          party.candidates.length,
-                          "add_new"
-                        )
-                      }
+                      onClick={() => startAddingCandidate(party.name)}
                       className='flex items-center justify-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-md border border-green-200 transition-colors w-full sm:w-auto text-sm sm:text-base'
                       variants={buttonVariants}
                       whileHover='hover'
@@ -687,10 +827,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                 disabled={isUpdating}
                 className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
                 variants={buttonVariants}
-                whileHover={isUpdating ? {} : "hover"}
-                whileTap={isUpdating ? {} : "tap"}
+                whileHover={isUpdating ? {} : 'hover'}
+                whileTap={isUpdating ? {} : 'tap'}
               >
-                {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+                {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
               </motion.button>
             </motion.div>
           </motion.div>

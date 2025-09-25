@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuthHeaders } from "../utils/auth";
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function SurveyFormStep3({ onPrevious, onNext }) {
   const [demands, setDemands] = useState({
     দারিদ্র্যমুক্তি: 0,
-    "উন্নত শিক্ষাব্যবস্থা": 0,
-    "পরিবেশ দূষণ রোধ": 0,
-    "উন্নত স্বাস্থ্যসেবা": 0,
-    "উন্নত যোগাযোগ": 0,
+    'উন্নত শিক্ষাব্যবস্থা': 0,
+    'পরিবেশ দূষণ রোধ': 0,
+    'উন্নত স্বাস্থ্যসেবা': 0,
+    'উন্নত যোগাযোগ': 0,
     নিরাপত্তা: 0,
     কর্মসংস্থান: 0,
-    "দ্রব্যমূল্য নিয়ন্ত্রন": 0,
+    'দ্রব্যমূল্য নিয়ন্ত্রন': 0,
   });
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
@@ -30,7 +30,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: "" });
+        setToast({ show: false, message: '' });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -49,7 +49,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
       });
       return;
     }
@@ -61,7 +61,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     if (selectedDemands.length === 0) {
       setToast({
         show: true,
-        message: "অনুগ্রহ করে অন্তত একটি চাওয়া নির্বাচন করুন।",
+        message: 'অনুগ্রহ করে অন্তত একটি চাওয়া নির্বাচন করুন।',
       });
       return;
     }
@@ -69,7 +69,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     // Prepare the demand details data
     const demandDetails = {
       demand_details: {
-        "বাংলাদেশের আগামীর নির্বাচিত সরকারের কাছে আপনার প্রধান চাওয়া কি কি?": {
+        'বাংলাদেশের আগামীর নির্বাচিত সরকারের কাছে আপনার প্রধান চাওয়া কি কি?': {
           ...demands,
         },
       },
@@ -80,10 +80,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify(demandDetails),
@@ -95,15 +95,15 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log("Survey updated successfully with demands");
+      console.log('Survey updated successfully with demands');
 
       // Navigate to next step after successful API call
       onNext();
     } catch (error) {
-      console.error("Error updating survey:", error);
+      console.error('Error updating survey:', error);
       setToast({
         show: true,
-        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+        message: 'সার্ভে আপডেট করতে সমস্যা হয়েছে।',
       });
     }
   };
@@ -116,7 +116,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -125,7 +125,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -137,7 +137,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -147,7 +147,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -163,7 +163,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     unchecked: { scale: 1 },
     hover: {
       scale: 1.05,
-      boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+      boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
     },
   };
 
@@ -174,7 +174,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -182,7 +182,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -216,23 +216,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={24}
-              height={24}
-            />
-          </motion.div>
-          <div>
-            <p className='text-gray-600'>বর্তমান অবস্থান</p>
-            <p className='font-medium'>ব্রাহ্মনবাড়িয়া পুলিশ লাইনস</p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div
@@ -289,7 +273,7 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
                     className='flex items-center space-x-3 p-3 border border-gray-200 rounded-md hover:bg-green-50'
                     variants={itemVariants}
                     whileHover='hover'
-                    animate={demands[demand] === 1 ? "checked" : "unchecked"}
+                    animate={demands[demand] === 1 ? 'checked' : 'unchecked'}
                   >
                     <input
                       type='checkbox'
@@ -331,10 +315,10 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
               disabled={isUpdating}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover={isUpdating ? {} : "hover"}
-              whileTap={isUpdating ? {} : "tap"}
+              whileHover={isUpdating ? {} : 'hover'}
+              whileTap={isUpdating ? {} : 'tap'}
             >
-              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
             </motion.button>
           </motion.div>
         </motion.form>

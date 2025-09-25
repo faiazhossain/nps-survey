@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useDispatch, useSelector } from "react-redux";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   updateSurveyWithLocationDetails,
   setSelectedSeatId,
-} from "../store/surveyCreateSlice";
-import { getAuthHeaders } from "../utils/auth";
+} from '../store/surveyCreateSlice';
+import { getAuthHeaders } from '../utils/auth';
 
 export default function SurveyFormStep2({ onPrevious, onNext }) {
   const [formData, setFormData] = useState({
-    division: "",
+    division: '',
     divisionId: null,
-    district: "",
+    district: '',
     districtId: null,
-    thana: "",
+    thana: '',
     thanaId: null,
-    constituency: "",
+    constituency: '',
     constituencyId: null,
-    union: "",
+    union: '',
     unionId: null,
-    ward: "",
+    ward: '',
   });
 
   // States for dropdown options
@@ -41,7 +41,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   });
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
@@ -60,13 +60,13 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       // Reset dependent fields
       setFormData((prev) => ({
         ...prev,
-        district: "",
+        district: '',
         districtId: null,
-        thana: "",
+        thana: '',
         thanaId: null,
-        constituency: "",
+        constituency: '',
         constituencyId: null,
-        union: "",
+        union: '',
         unionId: null,
       }));
       setDistricts([]);
@@ -83,9 +83,9 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       // Reset dependent fields
       setFormData((prev) => ({
         ...prev,
-        thana: "",
+        thana: '',
         thanaId: null,
-        union: "",
+        union: '',
         unionId: null,
       }));
       setThanas([]);
@@ -96,7 +96,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: "" });
+        setToast({ show: false, message: '' });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -106,20 +106,20 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   const fetchDivisions = async () => {
     try {
       setLoading((prev) => ({ ...prev, divisions: true }));
-      const response = await fetch("https://npsbd.xyz/api/divisions", {
-        method: "GET",
+      const response = await fetch('https://npsbd.xyz/api/divisions', {
+        method: 'GET',
         headers: {
-          accept: "application/json",
+          accept: 'application/json',
           ...getAuthHeaders(),
         },
       });
 
-      if (!response.ok) throw new Error("Failed to fetch divisions");
+      if (!response.ok) throw new Error('Failed to fetch divisions');
 
       const data = await response.json();
       setDivisions(data);
     } catch (error) {
-      console.error("Error fetching divisions:", error);
+      console.error('Error fetching divisions:', error);
     } finally {
       setLoading((prev) => ({ ...prev, divisions: false }));
     }
@@ -132,20 +132,20 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/divisions/${divisionId}/districts`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            accept: "application/json",
+            accept: 'application/json',
             ...getAuthHeaders(),
           },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch districts");
+      if (!response.ok) throw new Error('Failed to fetch districts');
 
       const data = await response.json();
       setDistricts(data);
     } catch (error) {
-      console.error("Error fetching districts:", error);
+      console.error('Error fetching districts:', error);
     } finally {
       setLoading((prev) => ({ ...prev, districts: false }));
     }
@@ -158,20 +158,20 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/districts/${districtId}/thanas`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            accept: "application/json",
+            accept: 'application/json',
             ...getAuthHeaders(),
           },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch thanas");
+      if (!response.ok) throw new Error('Failed to fetch thanas');
 
       const data = await response.json();
       setThanas(data);
     } catch (error) {
-      console.error("Error fetching thanas:", error);
+      console.error('Error fetching thanas:', error);
     } finally {
       setLoading((prev) => ({ ...prev, thanas: false }));
     }
@@ -184,20 +184,20 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/districts/${districtId}/seats`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            accept: "application/json",
+            accept: 'application/json',
             ...getAuthHeaders(),
           },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch seats");
+      if (!response.ok) throw new Error('Failed to fetch seats');
 
       const data = await response.json();
       setSeats(data);
     } catch (error) {
-      console.error("Error fetching seats:", error);
+      console.error('Error fetching seats:', error);
     } finally {
       setLoading((prev) => ({ ...prev, seats: false }));
     }
@@ -207,30 +207,30 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "division") {
+    if (name === 'division') {
       const selectedDivision = divisions.find((div) => div.bn_name === value);
       setFormData((prev) => ({
         ...prev,
         division: value,
         divisionId: selectedDivision ? selectedDivision.id : null,
       }));
-    } else if (name === "district") {
+    } else if (name === 'district') {
       const selectedDistrict = districts.find((dist) => dist.bn_name === value);
       setFormData((prev) => ({
         ...prev,
         district: value,
         districtId: selectedDistrict ? selectedDistrict.id : null,
       }));
-    } else if (name === "thana") {
+    } else if (name === 'thana') {
       const selectedThana = thanas.find((th) => th.bn_name === value);
       setFormData((prev) => ({
         ...prev,
         thana: value,
         thanaId: selectedThana ? selectedThana.id : null,
       }));
-    } else if (name === "constituency") {
+    } else if (name === 'constituency') {
       const selectedSeat = seats.find((seat) => seat.bn_name === value);
-      console.log("🚀 ~ handleInputChange ~ selectedSeat:", selectedSeat);
+      console.log('🚀 ~ handleInputChange ~ selectedSeat:', selectedSeat);
 
       // Store the seat ID in Redux
       if (selectedSeat && selectedSeat.id) {
@@ -255,7 +255,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
+        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
       });
       return;
     }
@@ -271,7 +271,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       setToast({
         show: true,
         message:
-          "অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র পূরণ করুন। ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন অথবা ওয়ার্ড এর মধ্যে অন্তত একটি পূরণ করতে হবে।",
+          'অনুগ্রহ করে সব প্রয়োজনীয় ক্ষেত্র পূরণ করুন। ইউনিয়ন/পৌরসভা/সিটি কর্পোরেশন অথবা ওয়ার্ড এর মধ্যে অন্তত একটি পূরণ করতে হবে।',
       });
       return;
     }
@@ -297,10 +297,10 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       // After API call completes successfully, navigate to the next step
       onNext();
     } catch (error) {
-      console.error("Error updating location details:", error);
+      console.error('Error updating location details:', error);
       setToast({
         show: true,
-        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
+        message: 'সার্ভে আপডেট করতে সমস্যা হয়েছে।',
       });
     }
   };
@@ -313,7 +313,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: 'easeOut',
         staggerChildren: 0.08,
       },
     },
@@ -322,7 +322,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -334,7 +334,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -344,7 +344,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: 'easeInOut',
       },
     },
     tap: {
@@ -358,10 +358,10 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
   const selectVariants = {
     focus: {
       scale: 1.01,
-      boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+      boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
       transition: {
         duration: 0.2,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
   };
@@ -373,7 +373,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -381,7 +381,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: "easeIn",
+        ease: 'easeIn',
       },
     },
   };
@@ -420,23 +420,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
         <motion.div
           className='flex items-center gap-2 mb-6'
           variants={itemVariants}
-        >
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Image
-              src='/images/serveyLogo/mapPoint.png'
-              alt='Location'
-              width={24}
-              height={24}
-            />
-          </motion.div>
-          <div>
-            <p className='text-gray-600'>বর্তমান অবস্থান</p>
-            <p className='font-medium'>ব্রাহ্মনবাড়িয়া পুলিশ লাইনস</p>
-          </div>
-        </motion.div>
+        ></motion.div>
 
         {/* Form Header */}
         <motion.div
@@ -592,7 +576,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
               />
@@ -611,7 +595,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
                 whileFocus={{
                   scale: 1.01,
-                  boxShadow: "0 0 0 3px rgba(34, 197, 94, 0.1)",
+                  boxShadow: '0 0 0 3px rgba(34, 197, 94, 0.1)',
                 }}
                 transition={{ duration: 0.2 }}
               />
@@ -639,10 +623,10 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
               disabled={isUpdating}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover={isUpdating ? {} : "hover"}
-              whileTap={isUpdating ? {} : "tap"}
+              whileHover={isUpdating ? {} : 'hover'}
+              whileTap={isUpdating ? {} : 'tap'}
             >
-              {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
+              {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
             </motion.button>
           </motion.div>
         </motion.form>
