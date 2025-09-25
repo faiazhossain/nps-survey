@@ -485,6 +485,15 @@ export default function SurveyHistory() {
                             : 'পাওয়া যায়নি '}
                         </p>
                       </div>
+                      <div>
+                        <span className='text-gray-500 text-xs font-medium'>
+                          সিটি কর্পোরেশন
+                        </span>
+                        <p className='text-base font-semibold text-gray-800'>
+                          {selectedSurvey.location_details?.সিটি_কর্পোরেশন ||
+                            'পাওয়া যায়নি '}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -595,6 +604,16 @@ export default function SurveyHistory() {
                           ] || 'পাওয়া যায়নি '}
                         </p>
                       </div>
+                      <div>
+                        <span className='text-gray-500 text-xs font-medium'>
+                          সবচেয়ে যোগ্য প্রার্থী
+                        </span>
+                        <p className='text-base font-semibold text-gray-800'>
+                          {selectedSurvey.selected_candidate_details?.[
+                            'এদের মধ্যে কাকে বেশী যোগ্য বলে মনে হয়?'
+                          ] || 'পাওয়া যায়নি '}
+                        </p>
+                      </div>
                     </div>
                     <div className='space-y-2 mb-4'>
                       <span className='text-gray-500 text-xs font-medium'>
@@ -615,13 +634,42 @@ export default function SurveyHistory() {
                         )}
                       </ul>
                     </div>
-                    <div>
+                    <div className='space-y-2 mb-4'>
+                      <span className='text-gray-500 text-xs font-medium'>
+                        প্রার্থীর খারাপ দিক
+                      </span>
+                      <ul className='list-disc list-inside text-base text-gray-800'>
+                        {Object.entries(
+                          selectedSurvey.selected_candidate_details?.[
+                            'এই প্রার্থীর কোন খারাপ দিক জানেন অথবা শুনেছেন?'
+                          ] || {}
+                        ).map(
+                          ([key, value]) =>
+                            value === 1 && (
+                              <li key={key} className='font-medium'>
+                                {key}
+                              </li>
+                            )
+                        )}
+                      </ul>
+                    </div>
+                    <div className='space-y-2'>
                       <span className='text-gray-500 text-xs font-medium'>
                         প্রার্থীর কাজ
                       </span>
                       <p className='text-base font-semibold text-gray-800'>
                         {selectedSurvey.candidate_work_details?.[
                           'সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?'
+                        ] || 'পাওয়া যায়নি '}
+                      </p>
+                    </div>
+                    <div className='space-y-2'>
+                      <span className='text-gray-500 text-xs font-medium'>
+                        অন্যান্য কাজের বিবরণ
+                      </span>
+                      <p className='text-base font-semibold text-gray-800'>
+                        {selectedSurvey.candidate_work_details?.[
+                          'অন্যান্য কাজের বিবরণ'
                         ] || 'পাওয়া যায়নি '}
                       </p>
                     </div>
