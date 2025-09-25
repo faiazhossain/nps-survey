@@ -108,6 +108,7 @@ const surveyCreateSlice = createSlice({
     isUpdating: false,
     updateSuccess: false,
     selectedSeatId: null, // Add selectedSeatId to store
+    partyData: [], // Add partyData to store party information from Step 5
   },
   reducers: {
     clearCreateError: (state) => {
@@ -122,6 +123,7 @@ const surveyCreateSlice = createSlice({
       state.isUpdating = false;
       state.updateSuccess = false;
       state.selectedSeatId = null; // Reset the selectedSeatId
+      state.partyData = []; // Reset the partyData
     },
     setCurrentSurveyId: (state, action) => {
       state.currentSurveyId = action.payload;
@@ -129,6 +131,10 @@ const surveyCreateSlice = createSlice({
     setSelectedSeatId: (state, action) => {
       // Add new action to set the selectedSeatId
       state.selectedSeatId = action.payload;
+    },
+    setPartyData: (state, action) => {
+      // Add new action to set the partyData
+      state.partyData = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -190,5 +196,6 @@ export const {
   resetCreateState,
   setCurrentSurveyId,
   setSelectedSeatId, // Export the new action
+  setPartyData, // Export the new action
 } = surveyCreateSlice.actions;
 export default surveyCreateSlice.reducer;

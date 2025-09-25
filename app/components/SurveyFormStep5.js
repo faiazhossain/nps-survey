@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { getAuthHeaders } from "../utils/auth";
+import { setPartyData } from "../store/surveyCreateSlice"; // Import setPartyData action
 
 export default function SurveyFormStep5({ onPrevious, onNext }) {
-  const [partyData, setPartyData] = useState([]);
+  const [partyData, setPartyDataState] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -59,7 +60,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
           };
         });
 
-        setPartyData(transformedData);
+        setPartyDataState(transformedData);
       } catch (error) {
         console.error("Error fetching party details:", error);
         setError("পার্টি তথ্য লোড করতে সমস্যা হয়েছে।");
@@ -73,7 +74,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Add new candidate to a party
   const addNewCandidate = (partyName, newCandidateName) => {
-    setPartyData((prevData) =>
+    setPartyDataState((prevData) =>
       prevData.map((party) => {
         if (party.name === partyName) {
           const newCandidateId = `${partyName}_${party.candidates.length}`;
@@ -92,7 +93,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Delete candidate from a party
   const deleteCandidate = (partyName, candidateIndex) => {
-    setPartyData((prevData) =>
+    setPartyDataState((prevData) =>
       prevData.map((party) => {
         if (party.name === partyName) {
           const newCandidates = party.candidates.filter(
@@ -116,7 +117,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   // Add new party
   const addNewParty = () => {
     const newPartyName = `নতুন দল ${partyData.length + 1}`;
-    setPartyData((prevData) => [
+    setPartyDataState((prevData) => [
       ...prevData,
       {
         name: newPartyName,
@@ -127,7 +128,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Update party name
   const updatePartyName = (oldName, newName) => {
-    setPartyData((prevData) =>
+    setPartyDataState((prevData) =>
       prevData.map((party) =>
         party.name === oldName
           ? {
@@ -149,7 +150,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     candidateIndex,
     selectedName
   ) => {
-    setPartyData((prevData) =>
+    setPartyDataState((prevData) =>
       prevData.map((party) => {
         if (party.name === partyName) {
           const newCandidates = [...party.candidates];
@@ -170,6 +171,9 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
       return;
     }
+
+    // Store party data in Redux before API call
+    dispatch(setPartyData(partyData));
 
     // Prepare the candidate details data in the required format
     const availPartyDetailsData = {
@@ -363,7 +367,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             className='bg-[#DBFBF1] px-2 py-1 rounded-md text-gray-600 text-sm sm:text-base'
             whileHover={{ scale: 1.05 }}
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.3, delay: 0.3 }}
           >
             ধাপ ৫/৮

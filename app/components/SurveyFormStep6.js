@@ -1,71 +1,50 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { getAuthHeaders } from '../utils/auth';
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep6({ onPrevious, onNext }) {
-  const [partyData, setPartyData] = useState([]);
   const [selectedCandidates, setSelectedCandidates] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const dispatch = useDispatch();
-  const { currentSurveyId, isUpdating } = useSelector(
+  const { currentSurveyId, isUpdating, partyData } = useSelector(
     (state) => state.surveyCreate
   );
 
-  // Fetch party and candidate data from API
+  // Initialize selected candidates when party data is available
   useEffect(() => {
-    const fetchPartyData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          'https://npsbd.xyz/api/party/details/201',
-          {
-            headers: {
-              accept: 'application/json',
-              ...getAuthHeaders(),
-            },
-          }
-        );
+    if (partyData && partyData.length > 0) {
+      const initialSelections = {};
+      partyData.forEach((party) => {
+        initialSelections[party.name] = "";
+      });
+      setSelectedCandidates(initialSelections);
+    }
+  }, [partyData]);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+  // Check if party data is available
+  const hasPartyData = partyData && partyData.length > 0;
 
-        const data = await response.json();
-
-        // Transform the data to match the expected format
-        const transformedData = data.দল.map((party) => {
-          const partyName = Object.keys(party)[0];
-          const candidates = party[partyName];
-          return {
-            name: partyName,
-            candidates: candidates,
-          };
-        });
-
-        setPartyData(transformedData);
-
-        // Initialize selected candidates
-        const initialSelections = {};
-        transformedData.forEach((party) => {
-          initialSelections[party.name] = '';
-        });
-        setSelectedCandidates(initialSelections);
-      } catch (error) {
-        console.error('Error fetching party data:', error);
-        setError('দলের তথ্য লোড করতে সমস্যা হয়েছে।');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPartyData();
-  }, []);
+  // Transform party data to get all candidates for each party
+  const transformedPartyData = hasPartyData
+    ? partyData
+        .map((party) => ({
+          name: party.name,
+          candidates: party.candidates
+            .filter(
+              (candidate) =>
+                candidate.name &&
+                candidate.name.trim() !== "" &&
+                candidate.name !== "add_new"
+            )
+            .map((candidate) => candidate.name),
+        }))
+        .filter((party) => party.candidates.length > 0)
+    : [];
 
   // Handle candidate selection
   const handleCandidateSelection = (partyName, candidateName) => {
@@ -78,7 +57,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
   // Handle next button click
   const handleNext = async () => {
     if (!currentSurveyId) {
-      alert('সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।');
+      alert("সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।");
       return;
     }
 
@@ -86,7 +65,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     const candidateDetailsData = {
       candidate_details: {
         দল: Object.entries(selectedCandidates)
-          .filter(([partyName, candidateName]) => candidateName.trim() !== '')
+          .filter(([partyName, candidateName]) => candidateName.trim() !== "")
           .map(([partyName, candidateName]) => ({
             [partyName]: candidateName,
           })),
@@ -98,10 +77,10 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
+            accept: "application/json",
+            "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
           body: JSON.stringify(candidateDetailsData),
@@ -113,13 +92,13 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log('Survey updated successfully with selected candidates');
+      console.log("Survey updated successfully with selected candidates");
 
       // Navigate to next step
       onNext();
     } catch (error) {
-      console.error('Error updating survey:', error);
-      alert('সার্ভে আপডেট করতে সমস্যা হয়েছে।');
+      console.error("Error updating survey:", error);
+      alert("সার্ভে আপডেট করতে সমস্যা হয়েছে।");
     }
   };
 
@@ -131,7 +110,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: "easeOut",
         staggerChildren: 0.08,
       },
     },
@@ -140,7 +119,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
@@ -152,7 +131,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
   };
@@ -162,7 +141,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: 'easeInOut',
+        ease: "easeInOut",
       },
     },
     tap: {
@@ -180,12 +159,12 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
     hover: {
       scale: 1.02,
-      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
       transition: {
         duration: 0.2,
       },
@@ -264,19 +243,20 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
           </motion.div>
         )}
 
-        {/* Loading State */}
-        {loading && (
+        {/* No Party Data Message */}
+        {!hasPartyData && (
           <motion.div
-            className='flex justify-center items-center py-8'
+            className='bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className='text-lg text-gray-600'>তথ্য লোড হচ্ছে...</div>
+            কোন দলের তথ্য পাওয়া যায়নি। আগের ধাপে ফিরে গিয়ে দল ও প্রার্থী যোগ
+            করুন।
           </motion.div>
         )}
 
         {/* Main Content */}
-        {!loading && (
+        {hasPartyData && transformedPartyData.length > 0 && (
           <motion.div className='space-y-6' variants={itemVariants}>
             {/* Section Title */}
             <motion.h2
@@ -288,7 +268,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
 
             {/* Party Cards */}
             <div className='space-y-4 sm:space-y-6'>
-              {partyData.map((party, partyIndex) => (
+              {transformedPartyData.map((party, partyIndex) => (
                 <motion.div
                   key={party.name}
                   className='bg-white border border-gray-200 rounded-lg p-3 sm:p-4 lg:p-6 shadow-sm'
@@ -313,7 +293,7 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                     {/* Mobile Layout - Dropdown */}
                     <div className='sm:hidden'>
                       <select
-                        value={selectedCandidates[party.name] || ''}
+                        value={selectedCandidates[party.name] || ""}
                         onChange={(e) =>
                           handleCandidateSelection(party.name, e.target.value)
                         }
@@ -393,10 +373,10 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
                 disabled={isUpdating}
                 className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
                 variants={buttonVariants}
-                whileHover={isUpdating ? {} : 'hover'}
-                whileTap={isUpdating ? {} : 'tap'}
+                whileHover={isUpdating ? {} : "hover"}
+                whileTap={isUpdating ? {} : "tap"}
               >
-                {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
+                {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
               </motion.button>
             </motion.div>
           </motion.div>
