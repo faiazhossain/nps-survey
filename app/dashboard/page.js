@@ -63,7 +63,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Handle successful survey creation
     if (createSuccess && currentSurveyId) {
-      dispatch(fetchSurveyStats()); // Refresh stats
+      // dispatch(fetchSurveyStats()); // Refresh stats
       router.push(`/survey/new?id=${currentSurveyId}`); // Navigate with survey ID
       // Don't reset state immediately to allow navigation to complete
     }
@@ -87,7 +87,7 @@ export default function Dashboard() {
         // Survey created successfully, navigate immediately
         const surveyId = result.payload.survey_id; // Use survey_id from API response
         router.push(`/survey/new?id=${surveyId}`);
-        dispatch(fetchSurveyStats()); // Refresh stats after navigation
+        // dispatch(fetchSurveyStats()); // Refresh stats after navigation
       } else {
         // If API fails, still allow navigation to survey form
         console.error('Survey creation failed, navigating anyway');
