@@ -1,16 +1,16 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getAuthHeaders } from "../utils/auth";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getAuthHeaders } from '../utils/auth';
 
 // Async thunk for creating a new survey
 export const createSurvey = createAsyncThunk(
-  "surveyCreate/createSurvey",
+  'surveyCreate/createSurvey',
   async (surveyData, { rejectWithValue }) => {
     try {
-      const response = await fetch("https://npsbd.xyz/api/surveys/", {
-        method: "POST",
+      const response = await fetch('https://npsbd.xyz/api/surveys/', {
+        method: 'POST',
         headers: {
-          accept: "application/json",
-          "Content-Type": "application/json",
+          accept: 'application/json',
+          'Content-Type': 'application/json',
           ...getAuthHeaders(),
         },
         body: JSON.stringify(surveyData),
@@ -18,7 +18,7 @@ export const createSurvey = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Failed to create survey");
+        throw new Error(errorData.detail || 'Failed to create survey');
       }
 
       const data = await response.json();
@@ -31,16 +31,16 @@ export const createSurvey = createAsyncThunk(
 
 // Async thunk for updating survey with person details
 export const updateSurveyWithPersonDetails = createAsyncThunk(
-  "surveyCreate/updateSurveyWithPersonDetails",
+  'surveyCreate/updateSurveyWithPersonDetails',
   async ({ surveyId, personDetails }, { rejectWithValue }) => {
     try {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${surveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify({
@@ -51,7 +51,7 @@ export const updateSurveyWithPersonDetails = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Failed to update survey");
+        throw new Error(errorData.detail || 'Failed to update survey');
       }
 
       const data = await response.json();
@@ -64,16 +64,16 @@ export const updateSurveyWithPersonDetails = createAsyncThunk(
 
 // Async thunk for updating survey with location details
 export const updateSurveyWithLocationDetails = createAsyncThunk(
-  "surveyCreate/updateSurveyWithLocationDetails",
+  'surveyCreate/updateSurveyWithLocationDetails',
   async ({ surveyId, locationDetails }, { rejectWithValue }) => {
     try {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${surveyId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+            accept: 'application/json',
+            'Content-Type': 'application/json',
             ...getAuthHeaders(),
           },
           body: JSON.stringify({
@@ -85,7 +85,7 @@ export const updateSurveyWithLocationDetails = createAsyncThunk(
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.detail || "Failed to update location details"
+          errorData.detail || 'Failed to update location details'
         );
       }
 
@@ -98,7 +98,7 @@ export const updateSurveyWithLocationDetails = createAsyncThunk(
 );
 
 const surveyCreateSlice = createSlice({
-  name: "surveyCreate",
+  name: 'surveyCreate',
   initialState: {
     isLoading: false,
     error: null,
@@ -114,6 +114,9 @@ const surveyCreateSlice = createSlice({
   reducers: {
     clearCreateError: (state) => {
       state.error = null;
+    },
+    clearUpdateSuccess: (state) => {
+      state.updateSuccess = false;
     },
     resetCreateState: (state) => {
       state.isLoading = false;
@@ -199,6 +202,7 @@ const surveyCreateSlice = createSlice({
 
 export const {
   clearCreateError,
+  clearUpdateSuccess,
   resetCreateState,
   setCurrentSurveyId,
   setSelectedSeatId, // Export the new action
