@@ -7,6 +7,29 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getAuthHeaders } from '../utils/auth';
 import { setPartyData } from '../store/surveyCreateSlice';
 
+// Predefined list of allowed party names
+const ALLOWED_PARTIES = [
+  'বিএনপি',
+  'বাংলাদেশ জামায়াতে ইসলামী',
+  'এনসিপি',
+  'আওয়ামী লীগ',
+  'জাতীয় পার্টি',
+  'ওয়ার্কার্স পার্টি',
+  'গণ অধিকার পরিষদ',
+  'ইসলামী শাসনতন্ত্র আন্দোলন',
+  'এলডিপি',
+  'বাসদ',
+  'জাসদ',
+  'সিপিবি',
+  'কল্যাণ পার্টি',
+  'জাগপা',
+  'জেপি',
+  'বিজেপি',
+  'জেএসডি',
+  'জাতীয় দল',
+  'অন্যান্য',
+];
+
 export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [partyData, setPartyDataState] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,10 +41,9 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     (state) => state.surveyCreate
   );
 
-  // Refs to manage focus for party name inputs (only for new party creation)
   const partyNameRefs = useRef({});
 
-  // Fetch party details from API
+  // Fetch party details from API (unchanged)
   useEffect(() => {
     const fetchPartyDetails = async () => {
       try {
@@ -50,19 +72,18 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
         const data = await response.json();
 
-        // Transform the data to include selection state
         const transformedData = data.দল.map((party, partyIndex) => {
           const partyName = Object.keys(party)[0];
           const candidates = party[partyName];
           return {
             id: `api_party_${partyIndex}`,
             name: partyName,
-            isFromApi: true, // Mark as API-sourced party
+            isFromApi: true,
             candidates: candidates.map((candidate, index) => ({
               id: `${partyName}_${index}`,
               name: candidate,
               isNew: false,
-              isSelected: false, // Add selection state
+              isSelected: false,
             })),
           };
         });
@@ -79,7 +100,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     fetchPartyDetails();
   }, [selectedSeatId]);
 
-  // Auto-hide toast after 3 seconds
+  // Auto-hide toast after 3 seconds (unchanged)
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
@@ -89,7 +110,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     }
   }, [toast.show]);
 
-  // Add new candidate to a party
+  // Add new candidate to a party (unchanged)
   const addNewCandidate = (partyName, newCandidateName) => {
     if (!newCandidateName || newCandidateName.trim() === '') {
       setToast({
@@ -131,7 +152,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                 id: newCandidateId,
                 name: newCandidateName.trim(),
                 isNew: true,
-                isSelected: true, // New candidates are selected by default
+                isSelected: true,
               },
             ],
           };
@@ -146,7 +167,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     });
   };
 
-  // Delete candidate from a party (only for new candidates)
+  // Delete candidate from a party (unchanged)
   const deleteCandidate = (partyName, candidateIndex) => {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
@@ -168,7 +189,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     );
   };
 
-  // Toggle candidate selection
+  // Toggle candidate selection (unchanged)
   const toggleCandidateSelection = (partyName, candidateIndex) => {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
@@ -187,18 +208,30 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Add new party
   const addNewParty = () => {
-    const newPartyName = `নতুন দল`;
+    const existingPartyNames = partyData.map((party) => party.name);
+    const availableParty = ALLOWED_PARTIES.find(
+      (party) => !existingPartyNames.includes(party)
+    );
+
+    if (!availableParty) {
+      setToast({
+        show: true,
+        message: 'সব দল ইতিমধ্যে যোগ করা হয়েছে।',
+      });
+      return;
+    }
+
     const partyId = `party_${Date.now()}_${partyData.length}`;
     setPartyDataState((prevData) => [
       ...prevData,
       {
         id: partyId,
-        name: newPartyName,
-        isFromApi: false, // Mark as user-created party
+        name: availableParty,
+        isFromApi: false,
         candidates: [],
       },
     ]);
-    // Set focus to the new party's input field
+
     setTimeout(() => {
       if (partyNameRefs.current[partyId]) {
         partyNameRefs.current[partyId].focus();
@@ -206,8 +239,20 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     }, 0);
   };
 
-  // Update party name (only for non-API parties)
+  // Update party name
   const updatePartyName = (partyId, newName) => {
+    const isDuplicate = partyData.some(
+      (party) => party.name === newName && party.id !== partyId
+    );
+
+    if (isDuplicate) {
+      setToast({
+        show: true,
+        message: `দলের নাম "${newName}" ইতিমধ্যে ব্যবহৃত হয়েছে।`,
+      });
+      return;
+    }
+
     setPartyDataState((prevData) =>
       prevData.map((party) =>
         party.id === partyId
@@ -224,7 +269,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     );
   };
 
-  // Update candidate name (for new candidates only)
+  // Update candidate name (unchanged)
   const updateCandidateName = (partyName, candidateIndex, newName) => {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
@@ -241,7 +286,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     );
   };
 
-  // Start adding a new candidate (add placeholder)
+  // Start adding a new candidate (unchanged)
   const startAddingCandidate = (partyName) => {
     setPartyDataState((prevData) =>
       prevData.map((party) => {
@@ -264,7 +309,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     );
   };
 
-  // Handle next button click
+  // Handle next button click (unchanged)
   const handleNext = async () => {
     if (!currentSurveyId) {
       setToast({
@@ -274,7 +319,6 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       return;
     }
 
-    // Check if there's at least one selected candidate or new candidate
     const partiesWithCandidates = partyData.filter((party) =>
       party.candidates.some(
         (candidate) =>
@@ -294,10 +338,8 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       return;
     }
 
-    // Store party data in Redux
     dispatch(setPartyData(partyData));
 
-    // Prepare the candidate details data (only selected and new candidates)
     const availPartyDetailsData = {
       avail_party_details: {
         দল: partyData
@@ -358,7 +400,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     }
   };
 
-  // Convert number to Bengali numeral
+  // Convert number to Bengali numeral (unchanged)
   const toBengaliNumber = (num) => {
     const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
     return num
@@ -368,7 +410,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       .join('');
   };
 
-  // Animation variants
+  // Animation variants (unchanged)
   const containerVariants = {
     hidden: { opacity: 0, x: 100 },
     visible: {
@@ -561,15 +603,26 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                         {party.name}
                       </p>
                     ) : (
-                      <input
-                        type='text'
+                      <select
                         value={party.name}
                         onChange={(e) =>
                           updatePartyName(party.id, e.target.value)
                         }
                         ref={(el) => (partyNameRefs.current[party.id] = el)}
                         className='text-base sm:text-lg font-semibold text-gray-800 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full'
-                      />
+                      >
+                        {ALLOWED_PARTIES.filter(
+                          (allowedParty) =>
+                            !partyData.some(
+                              (p) =>
+                                p.name === allowedParty && p.id !== party.id
+                            )
+                        ).map((allowedParty) => (
+                          <option key={allowedParty} value={allowedParty}>
+                            {allowedParty}
+                          </option>
+                        ))}
+                      </select>
                     )}
                   </div>
 
