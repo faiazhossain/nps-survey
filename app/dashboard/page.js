@@ -11,7 +11,7 @@ import { fetchUserProfile, clearAuth } from '../store/authSlice';
 import { fetchSurveyStats } from '../store/surveySlice';
 import { createSurvey, resetCreateState } from '../store/surveyCreateSlice';
 import { CgLogOut } from 'react-icons/cg';
-
+import { IoPersonCircleOutline } from 'react-icons/io5';
 export default function Dashboard() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -217,13 +217,8 @@ export default function Dashboard() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Image
-            src='/images/profile.png'
-            alt='Profile'
-            width={52}
-            height={52}
-            className='rounded-full'
-          />
+          <IoPersonCircleOutline className='text-5xl' />
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
