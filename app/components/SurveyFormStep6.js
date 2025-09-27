@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
@@ -87,26 +86,18 @@ export default function SurveyFormStep6({ onPrevious, onNext }) {
     console.log('Transformed Party Data:', transformedPartyData);
     console.log('Party Data Keys:', Object.keys(localSelectedCandidates));
 
-    // Check if every party has a selected candidate
-    // Use transformedPartyData to ensure we're checking the right parties
-    const allFieldsFilled = transformedPartyData.every((party) => {
-      const isSelected =
-        localSelectedCandidates[party.name] &&
-        localSelectedCandidates[party.name].trim() !== '';
-      console.log(
-        `Party ${party.name}: ${
-          isSelected ? 'Selected' : 'Not Selected'
-        } - Value: "${localSelectedCandidates[party.name]}"`
-      );
-      return isSelected;
-    });
+    // Check if at least one candidate is selected from any party
+    const atLeastOneSelected = Object.values(localSelectedCandidates).some(
+      (candidate) => candidate && candidate.trim() !== ''
+    );
 
-    console.log('All Fields Filled:', allFieldsFilled);
+    console.log('At Least One Candidate Selected:', atLeastOneSelected);
 
-    if (!allFieldsFilled) {
+    if (!atLeastOneSelected) {
       setToast({
         show: true,
-        message: 'অনুগ্রহ করে প্রতিটি দলের জন্য একটি প্রার্থী নির্বাচন করুন।',
+        message:
+          'অনুগ্রহ করে অন্তত একটি দলের জন্য একটি প্রার্থী নির্বাচন করুন।',
       });
       return;
     }
