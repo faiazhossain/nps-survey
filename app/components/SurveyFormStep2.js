@@ -78,11 +78,30 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     }
   }, [formData.divisionId]);
 
-  // Fetch thanas and seats when district changes
+  // Fetch seats when district changes
   useEffect(() => {
     if (formData.districtId) {
-      fetchThanas(formData.districtId);
       fetchSeats(formData.districtId);
+      // Reset dependent fields
+      setFormData((prev) => ({
+        ...prev,
+        thana: '',
+        thanaId: null,
+        constituency: '',
+        constituencyId: null,
+        union: '',
+        unionId: null,
+        cityCorporation: '',
+        ward: '',
+      }));
+      setThanas([]);
+    }
+  }, [formData.districtId]);
+
+  // Fetch thanas when constituency changes
+  useEffect(() => {
+    if (formData.constituencyId) {
+      fetchThanas(formData.constituencyId);
       // Reset dependent fields
       setFormData((prev) => ({
         ...prev,
@@ -95,7 +114,7 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       }));
       setThanas([]);
     }
-  }, [formData.districtId]);
+  }, [formData.constituencyId]);
 
   // Auto-hide toast after 3 seconds
   useEffect(() => {
@@ -156,32 +175,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
     }
   };
 
-  // Fetch thanas from API
-  const fetchThanas = async (districtId) => {
-    try {
-      setLoading((prev) => ({ ...prev, thanas: true }));
-      const response = await fetch(
-        `https://npsbd.xyz/api/districts/${districtId}/thanas`,
-        {
-          method: 'GET',
-          headers: {
-            accept: 'application/json',
-            ...getAuthHeaders(),
-          },
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to fetch thanas');
-
-      const data = await response.json();
-      setThanas(data);
-    } catch (error) {
-      console.error('Error fetching thanas:', error);
-    } finally {
-      setLoading((prev) => ({ ...prev, thanas: false }));
-    }
-  };
-
   // Fetch seats (constituencies) from API
   const fetchSeats = async (districtId) => {
     try {
@@ -205,6 +198,32 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
       console.error('Error fetching seats:', error);
     } finally {
       setLoading((prev) => ({ ...prev, seats: false }));
+    }
+  };
+
+  // Fetch thanas from API
+  const fetchThanas = async (seatId) => {
+    try {
+      setLoading((prev) => ({ ...prev, thanas: true }));
+      const response = await fetch(
+        `https://npsbd.xyz/api/seats/${seatId}/thanas`,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to fetch thanas');
+
+      const data = await response.json();
+      setThanas(data);
+    } catch (error) {
+      console.error('Error fetching thanas:', error);
+    } finally {
+      setLoading((prev) => ({ ...prev, thanas: false }));
     }
   };
 
@@ -520,30 +539,6 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
             </motion.div>
 
             <motion.div variants={itemVariants}>
-              <label htmlFor='thana' className='block text-gray-700 mb-2'>
-                থানা *{loading.thanas && <LoadingSpinner />}
-              </label>
-              <motion.select
-                id='thana'
-                name='thana'
-                value={formData.thana}
-                onChange={handleInputChange}
-                className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
-                variants={selectVariants}
-                whileFocus='focus'
-                required
-                disabled={!formData.district || loading.thanas}
-              >
-                <option value=''>নির্বাচন করুন</option>
-                {thanas.map((thana) => (
-                  <option key={thana.id} value={thana.bn_name}>
-                    {thana.bn_name}
-                  </option>
-                ))}
-              </motion.select>
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
               <label
                 htmlFor='constituency'
                 className='block text-gray-700 mb-2'
@@ -565,6 +560,30 @@ export default function SurveyFormStep2({ onPrevious, onNext }) {
                 {seats.map((seat) => (
                   <option key={seat.id} value={seat.bn_name}>
                     {seat.bn_name}
+                  </option>
+                ))}
+              </motion.select>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <label htmlFor='thana' className='block text-gray-700 mb-2'>
+                থানা *{loading.thanas && <LoadingSpinner />}
+              </label>
+              <motion.select
+                id='thana'
+                name='thana'
+                value={formData.thana}
+                onChange={handleInputChange}
+                className='w-full p-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                variants={selectVariants}
+                whileFocus='focus'
+                required
+                disabled={!formData.constituency || loading.thanas}
+              >
+                <option value=''>নির্বাচন করুন</option>
+                {thanas.map((thana) => (
+                  <option key={thana.id} value={thana.bn_name}>
+                    {thana.bn_name}
                   </option>
                 ))}
               </motion.select>
