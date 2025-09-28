@@ -190,7 +190,6 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     'বিজেপি',
     'জেএসডি',
     'জাতীয় দল',
-    'অন্যান্য',
   ];
 
   return (

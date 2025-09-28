@@ -399,6 +399,7 @@ export default function SurveyForm({ onPrevious, onNext }) {
                 <option value='মার্কেটিং/বিক্রয় প্রতিনিধি'>
                   মার্কেটিং/বিক্রয় প্রতিনিধি
                 </option>
+                <option value='গৃহিণী'>গৃহিণী</option>
                 <option value='আইটি পেশাজীবী'>আইটি পেশাজীবী</option>
                 <option value='মিডিয়া কর্মী'>মিডিয়া কর্মী</option>
                 <option value='কর্মচারী'>কর্মচারী</option>
