@@ -1,40 +1,41 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { getAuthHeaders } from '../utils/auth';
-import { setPartyData } from '../store/surveyCreateSlice';
+import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { getAuthHeaders } from "../utils/auth";
+import { setPartyData } from "../store/surveyCreateSlice";
 
 // Predefined list of allowed party names
 const ALLOWED_PARTIES = [
-  'বিএনপি',
-  'বাংলাদেশ জামায়াতে ইসলামী',
-  'এনসিপি',
-  'আওয়ামী লীগ',
-  'জাতীয় পার্টি',
-  'ওয়ার্কার্স পার্টি',
-  'গণ অধিকার পরিষদ',
-  'ইসলামী শাসনতন্ত্র আন্দোলন',
-  'এলডিপি',
-  'বাসদ',
-  'জাসদ',
-  'সিপিবি',
-  'কল্যাণ পার্টি',
-  'জাগপা',
-  'জেপি',
-  'বিজেপি',
-  'জেএসডি',
-  'জাতীয় দল',
-  'অন্যান্য',
+  "বিএনপি",
+  "বাংলাদেশ জামায়াতে ইসলামী",
+  "এনসিপি",
+  "আওয়ামী লীগ",
+  "জাতীয় পার্টি",
+  "ওয়ার্কার্স পার্টি",
+  "গণ অধিকার পরিষদ",
+  "ইসলামী শাসনতন্ত্র আন্দোলন",
+  "বাংলাদেশ খেলাফত আন্দোলন",
+  "খেলাফত মজলিস",
+  "এলডিপি",
+  "বাসদ",
+  "জাসদ",
+  "সিপিবি",
+  "কল্যাণ পার্টি",
+  "জাগপা",
+  "জেপি",
+  "বিজেপি",
+  "জেএসডি",
+  "জাতীয় দল",
 ];
 
 export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [partyData, setPartyDataState] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [toast, setToast] = useState({ show: false, message: '' });
+  const [error, setError] = useState("");
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, selectedSeatId } = useSelector(
@@ -50,7 +51,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
         setLoading(true);
         if (!selectedSeatId) {
           setError(
-            'আসন আইডি পাওয়া যায়নি। আগের ধাপে গিয়ে আসন নির্বাচন করুন।'
+            "আসন আইডি পাওয়া যায়নি। আগের ধাপে গিয়ে আসন নির্বাচন করুন।"
           );
           setLoading(false);
           return;
@@ -60,7 +61,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
           `https://npsbd.xyz/api/party/details/${selectedSeatId}`,
           {
             headers: {
-              accept: 'application/json',
+              accept: "application/json",
               ...getAuthHeaders(),
             },
           }
@@ -90,8 +91,8 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
         setPartyDataState(transformedData);
       } catch (error) {
-        console.error('Error fetching party details:', error);
-        setError('পার্টি তথ্য লোড করতে সমস্যা হয়েছে।');
+        console.error("Error fetching party details:", error);
+        setError("পার্টি তথ্য লোড করতে সমস্যা হয়েছে।");
       } finally {
         setLoading(false);
       }
@@ -104,7 +105,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: '' });
+        setToast({ show: false, message: "" });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -112,10 +113,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
 
   // Add new candidate to a party (unchanged)
   const addNewCandidate = (partyName, newCandidateName) => {
-    if (!newCandidateName || newCandidateName.trim() === '') {
+    if (!newCandidateName || newCandidateName.trim() === "") {
       setToast({
         show: true,
-        message: 'প্রার্থীর নাম খালি রাখা যাবে না।',
+        message: "প্রার্থীর নাম খালি রাখা যাবে না।",
       });
       return;
     }
@@ -131,7 +132,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     ) {
       setToast({
         show: true,
-        message: 'এই প্রার্থী ইতিমধ্যে এই দলে রয়েছেন।',
+        message: "এই প্রার্থী ইতিমধ্যে এই দলে রয়েছেন।",
       });
       return;
     }
@@ -140,7 +141,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       prevData.map((party) => {
         if (party.name === partyName) {
           const cleanedCandidates = party.candidates.filter(
-            (candidate) => candidate.name !== 'add_new'
+            (candidate) => candidate.name !== "add_new"
           );
 
           const newCandidateId = `${partyName}_${cleanedCandidates.length}`;
@@ -216,7 +217,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     if (!availableParty) {
       setToast({
         show: true,
-        message: 'সব দল ইতিমধ্যে যোগ করা হয়েছে।',
+        message: "সব দল ইতিমধ্যে যোগ করা হয়েছে।",
       });
       return;
     }
@@ -261,7 +262,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
               name: newName,
               candidates: party.candidates.map((candidate) => ({
                 ...candidate,
-                id: `${newName}_${candidate.id.split('_')[1]}`,
+                id: `${newName}_${candidate.id.split("_")[1]}`,
               })),
             }
           : party
@@ -298,7 +299,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
               ...party.candidates,
               {
                 id: newCandidateId,
-                name: 'add_new',
+                name: "add_new",
                 isSelected: false,
               },
             ],
@@ -314,7 +315,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
       });
       return;
     }
@@ -324,8 +325,8 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
         (candidate) =>
           (candidate.isSelected || candidate.isNew) &&
           candidate.name &&
-          candidate.name.trim() !== '' &&
-          candidate.name !== 'add_new'
+          candidate.name.trim() !== "" &&
+          candidate.name !== "add_new"
       )
     );
 
@@ -333,7 +334,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       setToast({
         show: true,
         message:
-          'অনুগ্রহ করে অন্তত একটি প্রার্থী নির্বাচন করুন বা নতুন প্রার্থী যোগ করুন।',
+          "অনুগ্রহ করে অন্তত একটি প্রার্থী নির্বাচন করুন বা নতুন প্রার্থী যোগ করুন।",
       });
       return;
     }
@@ -353,8 +354,8 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
               .filter(
                 (candidate) =>
                   (candidate.isSelected || candidate.isNew) &&
-                  candidate.name.trim() !== '' &&
-                  candidate.name !== 'add_new'
+                  candidate.name.trim() !== "" &&
+                  candidate.name !== "add_new"
               )
               .map((candidate) => candidate.name);
 
@@ -373,10 +374,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
+            accept: "application/json",
+            "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
           body: JSON.stringify(availPartyDetailsData),
@@ -388,26 +389,26 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       }
 
       await response.json();
-      console.log('Survey updated successfully with candidate details');
+      console.log("Survey updated successfully with candidate details");
 
       onNext();
     } catch (error) {
-      console.error('Error updating survey:', error);
+      console.error("Error updating survey:", error);
       setToast({
         show: true,
-        message: 'সার্ভে আপডেট করতে সমস্যা হয়েছে।',
+        message: "সার্ভে আপডেট করতে সমস্যা হয়েছে।",
       });
     }
   };
 
   // Convert number to Bengali numeral (unchanged)
   const toBengaliNumber = (num) => {
-    const bengaliNumbers = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    const bengaliNumbers = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
     return num
       .toString()
-      .split('')
+      .split("")
       .map((digit) => bengaliNumbers[parseInt(digit)])
-      .join('');
+      .join("");
   };
 
   // Animation variants (unchanged)
@@ -418,7 +419,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: "easeOut",
         staggerChildren: 0.08,
       },
     },
@@ -427,7 +428,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
@@ -439,7 +440,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
   };
@@ -449,7 +450,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: 'easeInOut',
+        ease: "easeInOut",
       },
     },
     tap: {
@@ -467,12 +468,12 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       scale: 1,
       transition: {
         duration: 0.3,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
     hover: {
       scale: 1.02,
-      boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+      boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
       transition: {
         duration: 0.2,
       },
@@ -486,7 +487,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
     exit: {
@@ -494,7 +495,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
@@ -633,14 +634,14 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                         key={candidate.id}
                         className={`space-y-2 sm:space-y-0 ${
                           candidate.isNew
-                            ? 'bg-green-50 border border-green-200 rounded-md p-2'
-                            : ''
+                            ? "bg-green-50 border border-green-200 rounded-md p-2"
+                            : ""
                         }`}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: candidateIndex * 0.1 }}
                       >
-                        {candidate.name === 'add_new' ? (
+                        {candidate.name === "add_new" ? (
                           <>
                             {/* Mobile Layout for add_new */}
                             <div className='sm:hidden'>
@@ -653,19 +654,19 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                 autoFocus
                                 onKeyDown={(e) => {
                                   if (
-                                    e.key === 'Enter' &&
-                                    e.target.value.trim() !== ''
+                                    e.key === "Enter" &&
+                                    e.target.value.trim() !== ""
                                   ) {
                                     addNewCandidate(party.name, e.target.value);
-                                    e.target.value = '';
-                                  } else if (e.key === 'Escape') {
+                                    e.target.value = "";
+                                  } else if (e.key === "Escape") {
                                     setPartyDataState((prevData) =>
                                       prevData.map((p) =>
                                         p.name === party.name
                                           ? {
                                               ...p,
                                               candidates: p.candidates.filter(
-                                                (c) => c.name !== 'add_new'
+                                                (c) => c.name !== "add_new"
                                               ),
                                             }
                                           : p
@@ -674,7 +675,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                   }
                                 }}
                                 onBlur={(e) => {
-                                  if (e.target.value.trim() !== '') {
+                                  if (e.target.value.trim() !== "") {
                                     addNewCandidate(party.name, e.target.value);
                                   } else {
                                     setPartyDataState((prevData) =>
@@ -683,7 +684,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                           ? {
                                               ...p,
                                               candidates: p.candidates.filter(
-                                                (c) => c.name !== 'add_new'
+                                                (c) => c.name !== "add_new"
                                               ),
                                             }
                                           : p
@@ -706,19 +707,19 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                 autoFocus
                                 onKeyDown={(e) => {
                                   if (
-                                    e.key === 'Enter' &&
-                                    e.target.value.trim() !== ''
+                                    e.key === "Enter" &&
+                                    e.target.value.trim() !== ""
                                   ) {
                                     addNewCandidate(party.name, e.target.value);
-                                    e.target.value = '';
-                                  } else if (e.key === 'Escape') {
+                                    e.target.value = "";
+                                  } else if (e.key === "Escape") {
                                     setPartyDataState((prevData) =>
                                       prevData.map((p) =>
                                         p.name === party.name
                                           ? {
                                               ...p,
                                               candidates: p.candidates.filter(
-                                                (c) => c.name !== 'add_new'
+                                                (c) => c.name !== "add_new"
                                               ),
                                             }
                                           : p
@@ -727,7 +728,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                   }
                                 }}
                                 onBlur={(e) => {
-                                  if (e.target.value.trim() !== '') {
+                                  if (e.target.value.trim() !== "") {
                                     addNewCandidate(party.name, e.target.value);
                                   } else {
                                     setPartyDataState((prevData) =>
@@ -736,7 +737,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                                           ? {
                                               ...p,
                                               candidates: p.candidates.filter(
-                                                (c) => c.name !== 'add_new'
+                                                (c) => c.name !== "add_new"
                                               ),
                                             }
                                           : p
@@ -936,10 +937,10 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                 disabled={isUpdating}
                 className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
                 variants={buttonVariants}
-                whileHover={isUpdating ? {} : 'hover'}
-                whileTap={isUpdating ? {} : 'tap'}
+                whileHover={isUpdating ? {} : "hover"}
+                whileTap={isUpdating ? {} : "tap"}
               >
-                {isUpdating ? 'সংরক্ষণ হচ্ছে...' : 'পরবর্তী ধাপে যান'}
+                {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
               </motion.button>
             </motion.div>
           </motion.div>

@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
-import { getAuthHeaders } from '../utils/auth';
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
+import { getAuthHeaders } from "../utils/auth";
 
 export default function SurveyFormStep8({ onPrevious }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     publicWorks: [], // Array to store multiple checkbox selections
-    publicWorksOther: '', // For the "Other" text input
-    popularParty: '',
+    publicWorksOther: "", // For the "Other" text input
+    popularParty: "",
   });
 
   // Toast state
-  const [toast, setToast] = useState({ show: false, message: '' });
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   const router = useRouter();
   const dispatch = useDispatch();
@@ -29,7 +29,7 @@ export default function SurveyFormStep8({ onPrevious }) {
   useEffect(() => {
     if (toast.show) {
       const timer = setTimeout(() => {
-        setToast({ show: false, message: '' });
+        setToast({ show: false, message: "" });
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -62,7 +62,7 @@ export default function SurveyFormStep8({ onPrevious }) {
     if (!currentSurveyId) {
       setToast({
         show: true,
-        message: 'সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।',
+        message: "সার্ভে ID পাওয়া যায়নি। আগের ধাপে ফিরে যান।",
       });
       return;
     }
@@ -70,18 +70,18 @@ export default function SurveyFormStep8({ onPrevious }) {
     if (formData.publicWorks.length === 0 || !formData.popularParty) {
       setToast({
         show: true,
-        message: 'অনুগ্রহ করে সব তথ্য পূরণ করুন।',
+        message: "অনুগ্রহ করে সব তথ্য পূরণ করুন।",
       });
       return;
     }
 
     if (
-      formData.publicWorks.includes('অন্যান্য (উল্লেখ করুন)') &&
+      formData.publicWorks.includes("অন্যান্য (উল্লেখ করুন)") &&
       !formData.publicWorksOther
     ) {
       setToast({
         show: true,
-        message: 'অনুগ্রহ করে অন্যান্য কাজের বিবরণ লিখুন।',
+        message: "অনুগ্রহ করে অন্যান্য কাজের বিবরণ লিখুন।",
       });
       return;
     }
@@ -91,18 +91,18 @@ export default function SurveyFormStep8({ onPrevious }) {
       const response = await fetch(
         `https://npsbd.xyz/api/surveys/${currentSurveyId}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
+            accept: "application/json",
+            "Content-Type": "application/json",
             ...getAuthHeaders(),
           },
           body: JSON.stringify({
             candidate_work_details: {
-              'সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?':
-                formData.publicWorks.join(', '), // Join array into a string
-              'অন্যান্য কাজের বিবরণ': formData.publicWorksOther || '',
-              'আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে জনপ্রিয়?':
+              "সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?":
+                formData.publicWorks.join(", "), // Join array into a string
+              "অন্যান্য কাজের বিবরণ": formData.publicWorksOther || "",
+              "আপনার মতে, রাজনৈতিক দল হিসেবে কোন দল আপনার এলাকায় সবচেয়ে জনপ্রিয়?":
                 formData.popularParty,
             },
           }),
@@ -114,14 +114,14 @@ export default function SurveyFormStep8({ onPrevious }) {
       }
 
       await response.json();
-      console.log('Survey completed successfully');
+      console.log("Survey completed successfully");
 
-      router.push('/survey/history');
+      router.push("/survey/history");
     } catch (error) {
-      console.error('Error submitting survey:', error);
+      console.error("Error submitting survey:", error);
       setToast({
         show: true,
-        message: 'সার্ভে জমা দিতে সমস্যা হয়েছে।',
+        message: "সার্ভে জমা দিতে সমস্যা হয়েছে।",
       });
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ export default function SurveyFormStep8({ onPrevious }) {
       x: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
+        ease: "easeOut",
         staggerChildren: 0.08,
       },
     },
@@ -145,7 +145,7 @@ export default function SurveyFormStep8({ onPrevious }) {
       x: -100,
       transition: {
         duration: 0.4,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
@@ -157,7 +157,7 @@ export default function SurveyFormStep8({ onPrevious }) {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
   };
@@ -167,7 +167,7 @@ export default function SurveyFormStep8({ onPrevious }) {
       scale: 1.02,
       transition: {
         duration: 0.2,
-        ease: 'easeInOut',
+        ease: "easeInOut",
       },
     },
     tap: {
@@ -185,7 +185,7 @@ export default function SurveyFormStep8({ onPrevious }) {
       y: 0,
       transition: {
         duration: 0.3,
-        ease: 'easeOut',
+        ease: "easeOut",
       },
     },
     exit: {
@@ -193,18 +193,18 @@ export default function SurveyFormStep8({ onPrevious }) {
       y: -50,
       transition: {
         duration: 0.2,
-        ease: 'easeIn',
+        ease: "easeIn",
       },
     },
   };
 
   const checkboxOptions = [
-    'মসজিদ-মাদ্রাসা বা মন্দির নির্মান',
-    'মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা',
-    'অসহায় মানুষকে আর্থিক সহযোগিতা',
-    'অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া',
-    'শিক্ষা প্রতিষ্ঠান নির্মান',
-    'অন্যান্য (উল্লেখ করুন)',
+    "মসজিদ-মাদ্রাসা বা মন্দির নির্মান",
+    "মসজিদ-মাদ্রাসা বা মন্দির উন্নয়নে সহযোগিতা",
+    "অসহায় মানুষকে আর্থিক সহযোগিতা",
+    "অসহায় মানুষের চিকিৎসার ব্যবস্থা করে দেওয়া",
+    "শিক্ষা প্রতিষ্ঠান নির্মান",
+    "অন্যান্য (উল্লেখ করুন)",
   ];
 
   return (
@@ -279,7 +279,7 @@ export default function SurveyFormStep8({ onPrevious }) {
             <h3 className='text-gray-700 mb-3 text-lg font-semibold'>
               সাধারণ মানুষের জন্য এই ব্যক্তি কি কি করেছেন?
               <span className='ml-2 text-sm text-gray-500'>
-                ({formData.publicWorks.length}/{checkboxOptions.length}{' '}
+                ({formData.publicWorks.length}/{checkboxOptions.length}{" "}
                 নির্বাচিত)
               </span>
             </h3>
@@ -289,8 +289,8 @@ export default function SurveyFormStep8({ onPrevious }) {
                   key={option}
                   className={`flex items-center space-x-3 p-3 border rounded-md transition-colors duration-200 ${
                     formData.publicWorks.includes(option)
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:bg-green-50'
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:bg-green-50"
                   }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -315,11 +315,11 @@ export default function SurveyFormStep8({ onPrevious }) {
                 </motion.div>
               ))}
             </div>
-            {formData.publicWorks.includes('অন্যান্য (উল্লেখ করুন)') && (
+            {formData.publicWorks.includes("অন্যান্য (উল্লেখ করুন)") && (
               <textarea
                 id='publicWorksOther'
                 name='publicWorksOther'
-                value={formData.publicWorksOther || ''}
+                value={formData.publicWorksOther || ""}
                 onChange={handleInputChange}
                 className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 min-h-[100px] mt-2'
                 placeholder='অন্যান্য কাজের বিবরণ লিখুন'
@@ -354,26 +354,27 @@ export default function SurveyFormStep8({ onPrevious }) {
                   একটি দল নির্বাচন করুন
                 </option>
                 {[
-                  'বিএনপি',
-                  'বাংলাদেশ জামায়াতে ইসলামী',
-                  'এনসিপি',
-                  'আওয়ামী লীগ',
-                  'জাতীয় পার্টি',
-                  'ওয়ার্কার্স পার্টি',
-                  'গণ অধিকার পরিষদ',
-                  'ইসলামী শাসনতন্ত্র আন্দোলন',
-                  'এলডিপি',
-                  'বাসদ',
-                  'জাসদ',
-                  'সিপিবি',
-                  'কল্যাণ পার্টি',
-                  'জাগপা',
-                  'জেপি',
-                  'বিজেপি',
-                  'জেএসডি',
-                  'জাতীয় দল',
-                  'অন্যান্য',
-                  'এখনোও বলতে পারছিনা',
+                  "বিএনপি",
+                  "বাংলাদেশ জামায়াতে ইসলামী",
+                  "এনসিপি",
+                  "আওয়ামী লীগ",
+                  "জাতীয় পার্টি",
+                  "ওয়ার্কার্স পার্টি",
+                  "গণ অধিকার পরিষদ",
+                  "ইসলামী শাসনতন্ত্র আন্দোলন",
+                  "বাংলাদেশ খেলাফত আন্দোলন",
+                  "খেলাফত মজলিস",
+                  "এলডিপি",
+                  "বাসদ",
+                  "জাসদ",
+                  "সিপিবি",
+                  "কল্যাণ পার্টি",
+                  "জাগপা",
+                  "জেপি",
+                  "বিজেপি",
+                  "জেএসডি",
+                  "জাতীয় দল",
+                  "এখনোও বলতে পারছিনা",
                 ].map((party) => (
                   <option key={party} value={party}>
                     {party}
@@ -405,10 +406,10 @@ export default function SurveyFormStep8({ onPrevious }) {
             disabled={loading || isUpdating}
             className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
             variants={buttonVariants}
-            whileHover={loading || isUpdating ? {} : 'hover'}
-            whileTap={loading || isUpdating ? {} : 'tap'}
+            whileHover={loading || isUpdating ? {} : "hover"}
+            whileTap={loading || isUpdating ? {} : "tap"}
           >
-            {loading ? 'জমা দেওয়া হচ্ছে...' : 'ফর্ম জমা দিন'}
+            {loading ? "জমা দেওয়া হচ্ছে..." : "ফর্ম জমা দিন"}
           </motion.button>
         </motion.div>
       </motion.div>
