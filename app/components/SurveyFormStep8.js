@@ -16,6 +16,11 @@ export default function SurveyFormStep8({ onPrevious }) {
     popularParty: "",
   });
 
+  // State for parties fetched from API
+  const [parties, setParties] = useState([]);
+  const [partiesLoading, setPartiesLoading] = useState(true);
+  const [partiesError, setPartiesError] = useState("");
+
   // Toast state
   const [toast, setToast] = useState({ show: false, message: "" });
 
@@ -24,6 +29,35 @@ export default function SurveyFormStep8({ onPrevious }) {
   const { currentSurveyId, isUpdating } = useSelector(
     (state) => state.surveyCreate
   );
+
+  // Fetch parties from API
+  useEffect(() => {
+    const fetchParties = async () => {
+      try {
+        setPartiesLoading(true);
+        const response = await fetch("https://npsbd.xyz/api/parties", {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setParties(data);
+      } catch (err) {
+        console.error("Error fetching parties:", err);
+        setPartiesError("দলের তালিকা লোড করতে সমস্যা হয়েছে।");
+      } finally {
+        setPartiesLoading(false);
+      }
+    };
+
+    fetchParties();
+  }, []);
 
   // Auto-hide toast after 3 seconds
   useEffect(() => {
@@ -273,6 +307,17 @@ export default function SurveyFormStep8({ onPrevious }) {
           </motion.div>
         )}
 
+        {/* Parties Error Display */}
+        {partiesError && (
+          <motion.div
+            className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {partiesError}
+          </motion.div>
+        )}
+
         {/* Form Fields */}
         <motion.div className='space-y-6' variants={itemVariants}>
           <motion.div variants={itemVariants} className='mb-6'>
@@ -347,39 +392,19 @@ export default function SurveyFormStep8({ onPrevious }) {
                 name='popularParty'
                 value={formData.popularParty}
                 onChange={handleInputChange}
-                className='w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-700'
+                disabled={partiesLoading}
+                className='w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'
                 required
               >
                 <option value='' disabled>
-                  একটি দল নির্বাচন করুন
+                  {partiesLoading ? "লোড হচ্ছে..." : "একটি দল নির্বাচন করুন"}
                 </option>
-                {[
-                  "বিএনপি",
-                  "বাংলাদেশ জামায়াতে ইসলামী",
-                  "এনসিপি",
-                  "আওয়ামী লীগ",
-                  "জাতীয় পার্টি",
-                  "ওয়ার্কার্স পার্টি",
-                  "গণ অধিকার পরিষদ",
-                  "ইসলামী শাসনতন্ত্র আন্দোলন",
-                  "বাংলাদেশ খেলাফত আন্দোলন",
-                  "খেলাফত মজলিস",
-                  "এলডিপি",
-                  "বাসদ",
-                  "জাসদ",
-                  "সিপিবি",
-                  "কল্যাণ পার্টি",
-                  "জাগপা",
-                  "জেপি",
-                  "বিজেপি",
-                  "জেএসডি",
-                  "জাতীয় দল",
-                  "এখনোও বলতে পারছিনা",
-                ].map((party) => (
-                  <option key={party} value={party}>
-                    {party}
+                {parties.map((party) => (
+                  <option key={party.id} value={party.party_name}>
+                    {party.party_name}
                   </option>
                 ))}
+                <option value='এখনোও বলতে পারছিনা'>এখনোও বলতে পারছিনা</option>
               </select>
             </div>
           </motion.div>

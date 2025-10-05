@@ -7,35 +7,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAuthHeaders } from "../utils/auth";
 import { setPartyData } from "../store/surveyCreateSlice";
 
-// Predefined list of allowed party names
-const ALLOWED_PARTIES = [
-  "বিএনপি",
-  "বাংলাদেশ জামায়াতে ইসলামী",
-  "এনসিপি",
-  "আওয়ামী লীগ",
-  "জাতীয় পার্টি",
-  "ওয়ার্কার্স পার্টি",
-  "গণ অধিকার পরিষদ",
-  "ইসলামী শাসনতন্ত্র আন্দোলন",
-  "বাংলাদেশ খেলাফত আন্দোলন",
-  "খেলাফত মজলিস",
-  "এলডিপি",
-  "বাসদ",
-  "জাসদ",
-  "সিপিবি",
-  "কল্যাণ পার্টি",
-  "জাগপা",
-  "জেপি",
-  "বিজেপি",
-  "জেএসডি",
-  "জাতীয় দল",
-];
-
 export default function SurveyFormStep5({ onPrevious, onNext }) {
   const [partyData, setPartyDataState] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
+
+  // State for parties fetched from API
+  const [parties, setParties] = useState([]);
+  const [partiesLoading, setPartiesLoading] = useState(true);
+  const [partiesError, setPartiesError] = useState("");
 
   const dispatch = useDispatch();
   const { currentSurveyId, isUpdating, selectedSeatId } = useSelector(
@@ -43,6 +24,35 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   );
 
   const partyNameRefs = useRef({});
+
+  // Fetch parties from API
+  useEffect(() => {
+    const fetchParties = async () => {
+      try {
+        setPartiesLoading(true);
+        const response = await fetch("https://npsbd.xyz/api/parties", {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setParties(data);
+      } catch (err) {
+        console.error("Error fetching parties:", err);
+        setPartiesError("দলের তালিকা লোড করতে সমস্যা হয়েছে।");
+      } finally {
+        setPartiesLoading(false);
+      }
+    };
+
+    fetchParties();
+  }, []);
 
   // Fetch party details from API (unchanged)
   useEffect(() => {
@@ -210,11 +220,11 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
   // Add new party
   const addNewParty = () => {
     const existingPartyNames = partyData.map((party) => party.name);
-    const availableParty = ALLOWED_PARTIES.find(
-      (party) => !existingPartyNames.includes(party)
+    const availablePartyObj = parties.find(
+      (party) => !existingPartyNames.includes(party.party_name)
     );
 
-    if (!availableParty) {
+    if (!availablePartyObj) {
       setToast({
         show: true,
         message: "সব দল ইতিমধ্যে যোগ করা হয়েছে।",
@@ -227,7 +237,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
       ...prevData,
       {
         id: partyId,
-        name: availableParty,
+        name: availablePartyObj.party_name,
         isFromApi: false,
         candidates: [],
       },
@@ -500,6 +510,14 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
     },
   };
 
+  // Filter available parties for select
+  const getAvailablePartiesForSelect = (currentPartyId) => {
+    const existingNames = partyData
+      .filter((party) => party.id !== currentPartyId)
+      .map((party) => party.name);
+    return parties.filter((party) => !existingNames.includes(party.party_name));
+  };
+
   return (
     <AnimatePresence mode='wait'>
       <motion.div
@@ -560,8 +578,19 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
           </motion.div>
         )}
 
+        {/* Parties Error Display */}
+        {partiesError && (
+          <motion.div
+            className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {partiesError}
+          </motion.div>
+        )}
+
         {/* Loading State */}
-        {loading && (
+        {(loading || partiesLoading) && (
           <motion.div
             className='flex justify-center items-center py-8'
             initial={{ opacity: 0 }}
@@ -572,7 +601,7 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
         )}
 
         {/* Main Content */}
-        {!loading && (
+        {!loading && !partiesLoading && (
           <motion.div className='space-y-6' variants={itemVariants}>
             {/* Section Title */}
             <motion.h2
@@ -610,19 +639,19 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
                           updatePartyName(party.id, e.target.value)
                         }
                         ref={(el) => (partyNameRefs.current[party.id] = el)}
-                        className='text-base sm:text-lg font-semibold text-gray-800 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full'
+                        disabled={partiesLoading}
+                        className='text-base sm:text-lg font-semibold text-gray-800 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full disabled:opacity-50 disabled:cursor-not-allowed'
                       >
-                        {ALLOWED_PARTIES.filter(
-                          (allowedParty) =>
-                            !partyData.some(
-                              (p) =>
-                                p.name === allowedParty && p.id !== party.id
-                            )
-                        ).map((allowedParty) => (
-                          <option key={allowedParty} value={allowedParty}>
-                            {allowedParty}
-                          </option>
-                        ))}
+                        {getAvailablePartiesForSelect(party.id).map(
+                          (allowedParty) => (
+                            <option
+                              key={allowedParty.id}
+                              value={allowedParty.party_name}
+                            >
+                              {allowedParty.party_name}
+                            </option>
+                          )
+                        )}
                       </select>
                     )}
                   </div>
@@ -901,10 +930,13 @@ export default function SurveyFormStep5({ onPrevious, onNext }) {
             <motion.div className='mt-4 sm:mt-6'>
               <motion.button
                 onClick={addNewParty}
-                className='w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-md border border-blue-200 transition-colors text-sm sm:text-base'
+                disabled={partiesLoading || parties.length === 0}
+                className='w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-md border border-blue-200 transition-colors text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed'
                 variants={buttonVariants}
-                whileHover='hover'
-                whileTap='tap'
+                whileHover={
+                  partiesLoading || parties.length === 0 ? {} : "hover"
+                }
+                whileTap={partiesLoading || parties.length === 0 ? {} : "tap"}
               >
                 <Image
                   src='/images/serveyLogo/add.png'

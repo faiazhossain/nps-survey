@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +8,11 @@ import { getAuthHeaders } from "../utils/auth";
 export default function SurveyFormStep3({ onPrevious, onNext }) {
   const [selectedParty, setSelectedParty] = useState("");
 
+  // State for parties fetched from API
+  const [parties, setParties] = useState([]);
+  const [partiesLoading, setPartiesLoading] = useState(true);
+  const [partiesError, setPartiesError] = useState("");
+
   // Toast state
   const [toast, setToast] = useState({ show: false, message: "" });
 
@@ -16,6 +20,35 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
   const { currentSurveyId, isUpdating, error, updateSuccess } = useSelector(
     (state) => state.surveyCreate
   );
+
+  // Fetch parties from API
+  useEffect(() => {
+    const fetchParties = async () => {
+      try {
+        setPartiesLoading(true);
+        const response = await fetch("https://npsbd.xyz/api/parties", {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setParties(data);
+      } catch (err) {
+        console.error("Error fetching parties:", err);
+        setPartiesError("দলের তালিকা লোড করতে সমস্যা হয়েছে।");
+      } finally {
+        setPartiesLoading(false);
+      }
+    };
+
+    fetchParties();
+  }, []);
 
   // Auto-hide toast after 3 seconds
   useEffect(() => {
@@ -26,14 +59,6 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
       return () => clearTimeout(timer);
     }
   }, [toast.show]);
-
-  // Handle checkbox change
-  const handleCheckboxChange = (demand) => {
-    setDemands((prevDemands) => ({
-      ...prevDemands,
-      [demand]: prevDemands[demand] === 0 ? 1 : 0,
-    }));
-  };
 
   // Handle next button click
   const handleNext = async () => {
@@ -170,30 +195,6 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
     },
   };
 
-  // List of Bangladeshi political parties in Bengali
-  const politicalParties = [
-    "বিএনপি",
-    "বাংলাদেশ জামায়াতে ইসলামী",
-    "এনসিপি",
-    "আওয়ামী লীগ",
-    "জাতীয় পার্টি",
-    "ওয়ার্কার্স পার্টি",
-    "গণ অধিকার পরিষদ",
-    "ইসলামী শাসনতন্ত্র আন্দোলন",
-    "বাংলাদেশ খেলাফত আন্দোলন",
-    "খেলাফত মজলিস",
-    "এলডিপি",
-    "বাসদ",
-    "জাসদ",
-    "সিপিবি",
-    "কল্যাণ পার্টি",
-    "জাগপা",
-    "জেপি",
-    "বিজেপি",
-    "জেএসডি",
-    "জাতীয় দল",
-  ];
-
   return (
     <AnimatePresence mode='wait'>
       <motion.div
@@ -260,6 +261,17 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
           </motion.div>
         )}
 
+        {/* Parties Error Display */}
+        {partiesError && (
+          <motion.div
+            className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            {partiesError}
+          </motion.div>
+        )}
+
         {/* Form Fields */}
         <motion.form
           onSubmit={(e) => e.preventDefault()}
@@ -275,12 +287,15 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
                 <select
                   value={selectedParty}
                   onChange={(e) => setSelectedParty(e.target.value)}
-                  className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                  disabled={partiesLoading}
+                  className='w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <option value=''>একটি দল নির্বাচন করুন</option>
-                  {politicalParties.map((party, index) => (
-                    <option key={index} value={party}>
-                      {party}
+                  <option value=''>
+                    {partiesLoading ? "লোড হচ্ছে..." : "একটি দল নির্বাচন করুন"}
+                  </option>
+                  {parties.map((party) => (
+                    <option key={party.id} value={party.party_name}>
+                      {party.party_name}
                     </option>
                   ))}
                 </select>
@@ -306,11 +321,15 @@ export default function SurveyFormStep3({ onPrevious, onNext }) {
             <motion.button
               type='button'
               onClick={handleNext}
-              disabled={isUpdating || !selectedParty}
+              disabled={isUpdating || !selectedParty || partiesLoading}
               className='flex-grow text-center rounded-md bg-gradient-to-b from-[#006747] to-[#005737] px-4 py-3 text-white hover:bg-gradient-to-b hover:from-[#005747] hover:to-[#003f2f] disabled:opacity-50 disabled:cursor-not-allowed'
               variants={buttonVariants}
-              whileHover={isUpdating || !selectedParty ? {} : "hover"}
-              whileTap={isUpdating || !selectedParty ? {} : "tap"}
+              whileHover={
+                isUpdating || !selectedParty || partiesLoading ? {} : "hover"
+              }
+              whileTap={
+                isUpdating || !selectedParty || partiesLoading ? {} : "tap"
+              }
             >
               {isUpdating ? "সংরক্ষণ হচ্ছে..." : "পরবর্তী ধাপে যান"}
             </motion.button>
